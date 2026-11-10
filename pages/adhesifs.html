@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adhésifs — Simulations MDC</title>
+  <style>
+    :root {
+      --accent-bar: #b45309;
+      --texte: #1f2937;
+      --titre: #111827;
+      --fond: #ffffff;
+      --carte: #ffffff;
+      --carte-bord: #e5e7eb;
+      --carte-bord-hover: #cbd5e1;
+      --discret: #6b7280;
+      --line-card: #cbd5e1;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.08);
+      --radius: 18px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent-bar: #d97706;
+        --texte: #e5e7eb;
+        --titre: #f9fafb;
+        --fond: #111827;
+        --carte: #1f2937;
+        --carte-bord: #374151;
+        --carte-bord-hover: #4b5563;
+        --discret: #9ca3af;
+        --line-card: #4b5563;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 30px 20px 60px;
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .header-center {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .accent-pill {
+      width: 44px;
+      height: 4px;
+      background: var(--accent-bar);
+      border-radius: 2px;
+      margin: 0 auto 14px;
+    }
+    .header-center h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--titre);
+      letter-spacing: -0.01em;
+    }
+    .header-center p {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--discret);
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    @media (max-width: 1040px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .grid-4 { grid-template-columns: 1fr; }
+    }
+    .card-tile {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .card-tile:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--carte-bord-hover);
+    }
+    .card-top-line {
+      width: 32px;
+      height: 3px;
+      background: var(--line-card);
+      border-radius: 2px;
+      margin-bottom: 18px;
+    }
+    .card-tile h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--titre);
+      line-height: 1.35;
+    }
+    .card-tile p {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--discret);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-center">
+    <div class="accent-pill"></div>
+    <h1>Adhésifs</h1>
+    <p>Contrôle des adhésifs : propriétés du produit, durcissement et performances du collage</p>
+  </div>
+
+  <div class="grid-4">
+
+    <!-- Tuile 1 : Masse volumique -->
+    <a href="#/masse-volumique" target="_top" class="card-tile">
+      <div class="card-top-line"></div>
+      <h2>Masse volumique</h2>
+      <p>Pycnomètre Hubbard, table de l'eau, moyenne et écart type</p>
+    </a>
+
+    <!-- Tuile 2 : Extrait sec -->
+    <a href="#/extrait-sec" target="_top" class="card-tile">
+      <div class="card-top-line"></div>
+      <h2>Extrait sec</h2>
+      <p>Conventionnel (NF EN 827) ou à masse constante</p>
+    </a>
+
+    <!-- Tuile 3 : Bille-anneau -->
+    <a href="#/bille-anneau" target="_top" class="card-tile">
+      <div class="card-top-line"></div>
+      <h2>Point de ramollissement bille-anneau</h2>
+      <p>Hot melt : bain chauffé à 5 °C/min, deux anneaux</p>
+    </a>
+
+    <!-- Tuile 4 : DPU -->
+    <a href="#/dpu" target="_top" class="card-tile">
+      <div class="card-top-line"></div>
+      <h2>Durée pratique d'utilisation (DPU)</h2>
+      <p>Pot life d'un bicomposant : la viscosité double</p>
+    </a>
+
+  </div>
+
+  <script>
+    function notifyResize() {
+      if (window.parent && window.frameElement) {
+        try { window.frameElement.style.height = (document.body.scrollHeight + 50) + "px"; } catch (e) {}
+      }
+    }
+    if (window.ResizeObserver) new ResizeObserver(notifyResize).observe(document.body);
+    window.addEventListener("load", notifyResize);
+  </script>
+</body>
+</html>

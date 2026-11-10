@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Point de ramollissement bille-anneau — Hot melts</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    :root {
+      --accent: #b45309;
+      --accent-light: #fef3c7;
+      --accent-hover: #92400e;
+      --texte: #1f2937;
+      --titre: #111827;
+      --fond: #ffffff;
+      --carte: #f9fafb;
+      --carte-bord: #e5e7eb;
+      --discret: #6b7280;
+      --vert: #15803d;
+      --vert-fond: #dcfce7;
+      --rouge: #b91c1c;
+      --rouge-fond: #fee2e2;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #d97706;
+        --accent-light: #78350f33;
+        --accent-hover: #f59e0b;
+        --texte: #e5e7eb;
+        --titre: #f9fafb;
+        --fond: #111827;
+        --carte: #1f2937;
+        --carte-bord: #374151;
+        --discret: #9ca3af;
+        --vert: #22c55e;
+        --vert-fond: #14532d44;
+        --rouge: #ef4444;
+        --rouge-fond: #7f1d1d44;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 8px 12px;
+      font: 14.5px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+      width: 100%;
+    }
+    h1, h2, h3 { color: var(--titre); margin: 0 0 6px; }
+    .header-module {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 12px;
+    }
+    .header-icon { font-size: 32px; }
+    .header-titles h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .header-titles p { margin: 0; font-size: 13px; color: var(--discret); }
+
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--carte-bord);
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--discret);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--titre); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .sim-layout {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.15fr) minmax(320px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .sim-layout { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .card {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .sample-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    select, input, button {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--carte-bord);
+      background: var(--fond);
+      color: var(--texte);
+    }
+    select { padding: 4px 8px; }
+
+    .bench-container {
+      background: var(--fond);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .bench-svg { width: 100%; max-width: 460px; height: auto; display: block; }
+
+    .table-notebook {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: center;
+      background: var(--fond);
+    }
+    .table-notebook th, .table-notebook td {
+      border: 1px solid var(--carte-bord);
+      padding: 6px 8px;
+    }
+    .table-notebook th { background: var(--carte); color: var(--titre); font-size: 12px; }
+
+    .info-callout {
+      font-size: 12px;
+      color: var(--discret);
+      font-style: italic;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: var(--carte);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .badge-counter {
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .step-item {
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--fond);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .step-item.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .step-item.done {
+      border-color: var(--carte-bord);
+      background: var(--carte);
+    }
+    .step-head {
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--carte);
+    }
+    .step-item.current .step-head {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .step-body {
+      padding: 10px 12px;
+      border-top: 1px solid var(--carte-bord);
+      font-size: 13.5px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--carte); color: var(--texte); border: 1px solid var(--carte-bord); }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
+    /* Exercices */
+    .exo-picker { display: flex; gap: 8px; margin-bottom: 12px; }
+    .exo-type-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--carte-bord);
+      background: var(--carte);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .exo-type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .exo-panel { display: none; }
+    .exo-panel.active { display: block; }
+
+    /* L'essentiel */
+    .essentiel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .essentiel-box {
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--carte);
+    }
+    .essentiel-box h3 {
+      font-size: 14px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--carte-bord);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .msg-feedback {
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .msg-success { background: var(--vert-fond); color: var(--vert); border-left: 3px solid var(--vert); }
+    .msg-error { background: var(--rouge-fond); color: var(--rouge); border-left: 3px solid var(--rouge); }
+
+    @media print {
+      .tabs-nav, .btn, .accordion-header { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#/simulations" target="_top" style="text-decoration:none; color:var(--accent); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-bottom:8px;">← Retour aux simulations Adhésifs</a>
+  <header class="header-module">
+    <div class="header-icon">🟠</div>
+    <div class="header-titles">
+      <h1>Point de ramollissement bille-anneau</h1>
+      <p>Point de fusion conventionnel d'un hot melt — NF EN 1238 / ISO 4625</p>
+    </div>
+  </header>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="simulation">🔬 Simulation</button>
+    <button class="tab-btn" data-tab="exercices">📝 Exercices</button>
+    <button class="tab-btn" data-tab="essentiel">💡 L'essentiel</button>
+  </nav>
+
+  <!-- ONGLET 1 : SIMULATION -->
+  <section id="tab-simulation" class="tab-panel active">
+    <div class="sim-layout">
+
+      <!-- Colonne gauche : Banc SVG & Résultats -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>Banc bille-anneau</span>
+            <button id="btn-reset-sim" class="btn btn-outline" style="font-size:11px; padding:2px 8px;">🔄 Recommencer</button>
+          </div>
+          <div class="sample-bar">
+            <div>
+              <label for="select-sample"><strong>Hot melt :</strong></label>
+              <select id="select-sample">
+                <option value="eva1">Hot melt EVA pour emballage (~70 °C)</option>
+                <option value="eva2">Hot melt EVA haute performance (~88 °C)</option>
+                <option value="pa">Hot melt polyamide (~118 °C)</option>
+                <option value="apao">Hot melt polyoléfine APAO (~105 °C)</option>
+                <option value="psa">Hot melt sensible à la pression (~74 °C)</option>
+                <option value="rosin">Ester de colophane tackifiant (~84 °C)</option>
+              </select>
+            </div>
+            <div>
+              <label for="select-liquid"><strong>Liquide du bain :</strong></label>
+              <select id="select-liquid">
+                <option value="eau">Eau déminéralisée (30 à 80 °C)</option>
+                <option value="glycerol">Glycérol (80 à 150 °C)</option>
+                <option value="silicone">Huile silicone (> 80 °C)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bench-container">
+            <svg class="bench-svg" viewBox="0 0 380 220" role="img" aria-label="Appareil bille et anneau dans son bain">
+              <!-- BECHER EN VERRE -->
+              <g transform="translate(60, 20)">
+                <!-- Agitateur magnétique / plaque chauffante sous bécher -->
+                <rect x="10" y="160" width="180" height="25" rx="3" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+                <circle cx="35" cy="172" r="5" fill="#10b981"/>
+                <text x="50" y="176" font-size="9" fill="#e2e8f0" font-weight="600">5 °C/min</text>
+
+                <!-- Bécher verre -->
+                <path d="M 20 20 L 20 160 L 180 160 L 180 20" fill="none" stroke="#64748b" stroke-width="2"/>
+                <!-- Liquide du bain -->
+                <rect id="bath-liquid" x="22" y="35" width="156" height="123" fill="#93c5fd" opacity="0.35"/>
+
+                <!-- SUPPORT NORMALISÉ BILLE-ANNEAU -->
+                <!-- Tige centrale -->
+                <line x1="100" y1="10" x2="100" y2="145" stroke="#475569" stroke-width="2"/>
+                <!-- Plaque supérieure supportant les anneaux (z = 0) -->
+                <rect x="50" y="60" width="100" height="6" fill="#d97706" rx="1"/>
+                <!-- Plaque inférieure d'arrêt (distance de chute = 25 mm) -->
+                <rect x="50" y="130" width="100" height="4" fill="#64748b" rx="1"/>
+                <!-- Flèche cote 25 mm -->
+                <line x1="42" y1="66" x2="42" y2="130" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>
+                <text x="38" y="102" text-anchor="end" font-size="8" fill="#64748b">25 mm</text>
+
+                <!-- ANNEAU 1 (gauche) & BILLE 1 -->
+                <g id="ring-group-1" transform="translate(68, 60)">
+                  <!-- Anneau en laiton -->
+                  <rect x="-8" y="0" width="16" height="6" fill="#b45309"/>
+                  <!-- Pastille hot melt -->
+                  <rect x="-6" y="0" width="12" height="6" fill="#f59e0b"/>
+                  <!-- Goutte / poche pendante en déformation -->
+                  <path id="drop-1" d="M -6 6 Q 0 6 6 6 Z" fill="#f59e0b" opacity="0.9"/>
+                  <!-- Bille d'acier (diamètre 9,5 mm) -->
+                  <circle id="ball-1" cx="0" cy="0" r="5" fill="#475569" stroke="#1e293b" stroke-width="0.8"/>
+                </g>
+
+                <!-- ANNEAU 2 (droite) & BILLE 2 -->
+                <g id="ring-group-2" transform="translate(132, 60)">
+                  <rect x="-8" y="0" width="16" height="6" fill="#b45309"/>
+                  <rect x="-6" y="0" width="12" height="6" fill="#f59e0b"/>
+                  <path id="drop-2" d="M -6 6 Q 0 6 6 6 Z" fill="#f59e0b" opacity="0.9"/>
+                  <circle id="ball-2" cx="0" cy="0" r="5" fill="#475569" stroke="#1e293b" stroke-width="0.8"/>
+                </g>
+
+                <!-- THERMOMÈTRE PLONGEANT AU CENTRE -->
+                <rect x="97" y="15" width="6" height="110" rx="3" fill="#f8fafc" stroke="#475569" stroke-width="1"/>
+                <rect id="thermo-mercury" x="98.5" y="70" width="3" height="55" fill="#ef4444"/>
+                <circle cx="100" cy="125" r="5" fill="#ef4444"/>
+              </g>
+
+              <!-- CADRAN DIGITAL & LOUPE TEMPÉRATURE (à droite) -->
+              <g transform="translate(265, 30)">
+                <rect x="0" y="0" width="105" height="150" rx="6" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                <text x="52" y="20" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="700">THERMOMÈTRE</text>
+
+                <!-- Température courante -->
+                <rect x="10" y="30" width="85" height="30" rx="3" fill="#022c22"/>
+                <text id="lcd-temp" x="52" y="52" text-anchor="middle" font-size="18" font-weight="700" fill="#10b981" font-family="monospace">30.0 °C</text>
+
+                <text x="52" y="78" text-anchor="middle" font-size="9" fill="#94a3b8">Chauffe : 5,0 °C/min</text>
+                <text id="run-status" x="52" y="94" text-anchor="middle" font-size="10" font-weight="700" fill="#f59e0b">PRÊT</text>
+
+                <!-- Témoins contact anneaux -->
+                <rect x="10" y="108" width="40" height="25" rx="3" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+                <text x="30" y="120" text-anchor="middle" font-size="8" fill="#94a3b8">Anneau 1</text>
+                <text id="tag-t1" x="30" y="130" text-anchor="middle" font-size="8" font-weight="700" fill="#e2e8f0">—</text>
+
+                <rect x="55" y="108" width="40" height="25" rx="3" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+                <text x="75" y="120" text-anchor="middle" font-size="8" fill="#94a3b8">Anneau 2</text>
+                <text id="tag-t2" x="75" y="130" text-anchor="middle" font-size="8" font-weight="700" fill="#e2e8f0">—</text>
+              </g>
+            </svg>
+          </div>
+          <div class="info-callout">
+            NF EN 1238 : bain chauffé à 5 °C/min. On note la température exacte lorsque la poche entourant chaque bille touche la plaque inférieure (chute de 25 mm).
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cahier d'essai</div>
+          <table class="table-notebook">
+            <thead>
+              <tr>
+                <th>Anneau 1 (T₁)</th>
+                <th>Anneau 2 (T₂)</th>
+                <th>Écart |T₁ − T₂|</th>
+                <th>Moyenne (T)</th>
+                <th>Validité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="cell-t1">…</td>
+                <td id="cell-t2">…</td>
+                <td id="cell-diff">…</td>
+                <td id="cell-mean" style="font-weight:700; color:var(--accent);">…</td>
+                <td id="cell-valid">…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Colonne droite : Contrôles & Étapes -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>Déroulement de l'essai</span>
+            <span class="badge-counter" id="step-counter">Étape 1 / 4</span>
+          </div>
+
+          <div id="steps-container"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ONGLET 2 : EXERCICES -->
+  <section id="tab-exercices" class="tab-panel">
+    <div class="card">
+      <div class="exo-picker">
+        <button class="exo-type-btn active" data-exo="calc">🧮 Calcul & Validité</button>
+        <button class="exo-type-btn" data-exo="liq">🧪 Choix du bain</button>
+      </div>
+
+      <div id="exo-panel-calc" class="exo-panel active">
+        <h3>Calcul et validation d'un essai bille-anneau</h3>
+        <p id="exo-calc-statement" style="font-size:13.5px;"></p>
+        <div class="field-row" style="max-width:320px;">
+          <label for="inp-diff">Écart |T₁ − T₂| (°C) :</label>
+          <input type="text" id="inp-diff" placeholder="x,x °C">
+        </div>
+        <div class="field-row" style="max-width:320px;">
+          <label for="inp-mean">Point de ramollissement (°C) :</label>
+          <input type="text" id="inp-mean" placeholder="xx,x °C">
+        </div>
+        <div class="field-row" style="max-width:320px;">
+          <label for="select-valid">Résultat valide ?</label>
+          <select id="select-valid">
+            <option value="">-- Choisir --</option>
+            <option value="oui">Oui (écart ≤ 1,0 °C)</option>
+            <option value="non">Non (écart > 1,0 °C)</option>
+          </select>
+        </div>
+        <button id="btn-verify-calc" class="btn btn-primary" style="margin-top:8px;">Vérifier</button>
+        <div id="exo-calc-feedback" style="margin-top:8px;"></div>
+      </div>
+
+      <div id="exo-panel-liq" class="exo-panel">
+        <h3>Choix du liquide du bain</h3>
+        <p id="exo-liq-statement" style="font-size:13.5px;"></p>
+        <div id="exo-liq-choices"></div>
+        <button id="btn-verify-liq" class="btn btn-primary" style="margin-top:10px;">Vérifier</button>
+        <div id="exo-liq-feedback" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONGLET 3 : L'ESSENTIEL -->
+  <section id="tab-essentiel" class="tab-panel">
+    <div class="essentiel-grid">
+      <div class="essentiel-box">
+        <h3>1. Point de ramollissement conventionnel</h3>
+        <p>Les résines et hot melts ne sont pas des corps purs cristallins : ils n'ont pas de température de fusion franche, mais une plage de transition vitreuse progressive.</p>
+        <p>Le <strong>point bille-anneau</strong> est une température conventionnelle normalisée qui caractérise la tenue thermique de la colle.</p>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>2. Conditions normalisées (NF EN 1238)</h3>
+        <ul style="padding-left:18px; margin:0; font-size:13px; line-height:1.6;">
+          <li><strong>Vitesse de montée en température :</strong> $5,0 \pm 0,5\text{ °C/min}$.</li>
+          <li><strong>Distance de chute :</strong> $25,0\text{ mm}$ jusqu'à la plaque inférieure.</li>
+          <li><strong>Bain :</strong> eau déminéralisée ($30$ à $80\text{ °C}$) ; glycérol ou silicone au-delà de $80\text{ °C}$.</li>
+        </ul>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>3. Règle de répétabilité</h3>
+        <p>Les températures $T_1$ et $T_2$ des deux anneaux testés simultanément <strong>ne doivent pas différer de plus de $1,0\text{ °C}$</strong> :</p>
+        <p>$$|T_1 - T_2| \le 1,0\text{ °C}$$</p>
+        <p>Si la condition est respectée, le point bille-anneau est la moyenne arithmétique : $T = \frac{T_1 + T_2}{2}$. Sinon, l'essai doit être recommencé.</p>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>4. Types de hot melts courants</h3>
+        <ul style="padding-left:18px; margin:0; font-size:13px; line-height:1.6;">
+          <li>EVA emballage : $65$ à $80\text{ °C}$ (eau distillée).</li>
+          <li>EVA haute performance : $85$ à $95\text{ °C}$ (glycérol).</li>
+          <li>Polyamides (assemblage technique) : $110$ à $130\text{ °C}$ (glycérol/silicone).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCRIPT DU MODULE BILLE-ANNEAU -->
+  <script>
+  (function () {
+    "use strict";
+
+    const HOTMELTS = {
+      eva1: { name: "Hot melt EVA pour emballage", t_nom: 71.0, bathReq: "eau" },
+      eva2: { name: "Hot melt EVA haute performance", t_nom: 88.5, bathReq: "glycerol" },
+      pa: { name: "Hot melt polyamide technique", t_nom: 118.0, bathReq: "glycerol" },
+      apao: { name: "Hot melt polyoléfine APAO", t_nom: 104.5, bathReq: "glycerol" },
+      psa: { name: "Hot melt sensible à la pression", t_nom: 74.5, bathReq: "eau" },
+      rosin: { name: "Ester de colophane tackifiant", t_nom: 84.0, bathReq: "glycerol" }
+    };
+
+    let sim = {
+      sampleKey: "eva1",
+      bathLiquid: "eau",
+      step: 0,
+      temp: 30.0,
+      rate: 5.0, // °C/min
+      running: false,
+      speedUp: 1,
+      t1_target: 71.2,
+      t2_target: 71.8,
+      t1_done: null,
+      t2_done: null,
+      intervalId: null
+    };
+
+    function randBetween(min, max) { return min + Math.random() * (max - min); }
+    function round1(x) { return Math.round(x * 10) / 10; }
+    function fmt1(x) { return x !== null && !isNaN(x) ? Number(x).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "…"; }
+
+    function initSim() {
+      if (sim.intervalId) clearInterval(sim.intervalId);
+      const h = HOTMELTS[sim.sampleKey];
+      sim.step = 0;
+      sim.temp = 30.0;
+      sim.running = false;
+      sim.speedUp = 1;
+
+      // Tirage des températures de contact (autour du point nominal, écart réaliste)
+      const t_base = h.t_nom + randBetween(-2.5, 2.5);
+      const diff = randBetween(0.2, 0.8);
+      sim.t1_target = round1(t_base - diff / 2);
+      sim.t2_target = round1(t_base + diff / 2);
+      sim.t1_done = null;
+      sim.t2_done = null;
+
+      updateVisuals();
+      renderSteps();
+    }
+
+    function updateVisuals() {
+      document.getElementById("lcd-temp").textContent = fmt1(sim.temp) + " °C";
+      document.getElementById("tag-t1").textContent = sim.t1_done !== null ? fmt1(sim.t1_done) + " °C" : "—";
+      document.getElementById("tag-t2").textContent = sim.t2_done !== null ? fmt1(sim.t2_done) + " °C" : "—";
+
+      // Colonne de mercure
+      const merc = document.getElementById("thermo-mercury");
+      if (merc) {
+        // Température de 30 à 150 °C
+        const pct = Math.min(Math.max((sim.temp - 30) / 120, 0), 1);
+        merc.setAttribute("y", 125 - pct * 90);
+        merc.setAttribute("height", pct * 90);
+      }
+
+      // Couleur liquide de bain
+      const bath = document.getElementById("bath-liquid");
+      if (bath) {
+        if (sim.bathLiquid === "eau") bath.setAttribute("fill", "#93c5fd");
+        else if (sim.bathLiquid === "glycerol") bath.setAttribute("fill", "#cbd5e1");
+        else bath.setAttribute("fill", "#fef08a");
+      }
+
+      // Chute des billes (distance = 25 mm -> y passe de 0 à 64 px)
+      const b1 = document.getElementById("ball-1");
+      const d1 = document.getElementById("drop-1");
+      const b2 = document.getElementById("ball-2");
+      const d2 = document.getElementById("drop-2");
+
+      const t_start = sim.t1_target - 8;
+      if (b1 && d1) {
+        let prog1 = Math.min(Math.max((sim.temp - t_start) / 8, 0), 1);
+        let y1 = prog1 * 64;
+        b1.setAttribute("cy", y1);
+        d1.setAttribute("d", `M -6 6 Q 0 ${6 + y1} 6 6 Z`);
+        if (prog1 >= 1 && sim.t1_done === null) {
+          sim.t1_done = sim.t1_target;
+          document.getElementById("tag-t1").textContent = fmt1(sim.t1_done) + " °C";
+        }
+      }
+
+      const t_start2 = sim.t2_target - 8;
+      if (b2 && d2) {
+        let prog2 = Math.min(Math.max((sim.temp - t_start2) / 8, 0), 1);
+        let y2 = prog2 * 64;
+        b2.setAttribute("cy", y2);
+        d2.setAttribute("d", `M -6 6 Q 0 ${6 + y2} 6 6 Z`);
+        if (prog2 >= 1 && sim.t2_done === null) {
+          sim.t2_done = sim.t2_target;
+          document.getElementById("tag-t2").textContent = fmt1(sim.t2_done) + " °C";
+        }
+      }
+
+      // Cahier
+      document.getElementById("cell-t1").textContent = sim.t1_done !== null ? fmt1(sim.t1_done) + " °C" : "…";
+      document.getElementById("cell-t2").textContent = sim.t2_done !== null ? fmt1(sim.t2_done) + " °C" : "…";
+      if (sim.t1_done !== null && sim.t2_done !== null) {
+        const diff = round1(Math.abs(sim.t1_done - sim.t2_done));
+        const mean = round1((sim.t1_done + sim.t2_done) / 2);
+        document.getElementById("cell-diff").textContent = fmt1(diff) + " °C";
+        document.getElementById("cell-mean").textContent = fmt1(mean) + " °C";
+        document.getElementById("cell-valid").innerHTML = diff <= 1.0
+          ? '<span style="color:var(--vert); font-weight:700;">✅ Valide (≤ 1 °C)</span>'
+          : '<span style="color:var(--rouge); font-weight:700;">❌ Non valide (> 1 °C)</span>';
+      }
+    }
+
+    function startHeating() {
+      sim.running = true;
+      document.getElementById("run-status").textContent = "CHAUFFE EN COURS";
+      document.getElementById("run-status").style.color = "#ef4444";
+
+      sim.intervalId = setInterval(() => {
+        // 5 °C par minute = 5/60 °C par seconde. Avec speedUp = 8x, on incrémente vite
+        sim.temp += (5.0 / 60) * 0.25 * 8 * sim.speedUp;
+        sim.temp = round1(sim.temp);
+        updateVisuals();
+
+        // Si l'eau bout (> 98 °C) et bain d'eau
+        if (sim.temp >= 98 && sim.bathLiquid === "eau" && (sim.t1_done === null || sim.t2_done === null)) {
+          clearInterval(sim.intervalId);
+          sim.running = false;
+          alert("L'eau commence à bouillir sans que les billes n'aient touché le fond ! Il fallait choisir un bain de glycérol ou d'huile silicone pour ce hot melt.");
+          return;
+        }
+
+        if (sim.t1_done !== null && sim.t2_done !== null) {
+          clearInterval(sim.intervalId);
+          sim.running = false;
+          document.getElementById("run-status").textContent = "FIN DE L'ESSAI";
+          document.getElementById("run-status").style.color = "#10b981";
+          sim.step = 3;
+          renderSteps();
+        }
+      }, 50);
+    }
+
+    const STEPS = [
+      { id: 0, title: "Vérifier le choix du bain", desc: "Le bain doit être adapté au point estimé (eau si < 80 °C, glycérol/silicone au-delà)." },
+      { id: 1, title: "Lancer la chauffe normalisée", desc: "La montée doit être de 5,0 °C/min ± 0,5 °C." },
+      { id: 2, title: "Surveiller le contact des billes", desc: "Chaque bille fait descendre une poche de résine fondue." },
+      { id: 3, title: "Vérifier la validité et calculer", desc: "Les deux températures doivent différer de 1,0 °C maximum." }
+    ];
+
+    function renderSteps() {
+      const container = document.getElementById("steps-container");
+      document.getElementById("step-counter").textContent = `Étape ${Math.min(sim.step + 1, 4)} / 4`;
+
+      let html = "";
+      STEPS.forEach(s => {
+        const isCurrent = s.id === sim.step;
+        const isDone = s.id < sim.step;
+        html += `
+          <div class="step-item ${isCurrent ? "current" : isDone ? "done" : "locked"}">
+            <div class="step-head">
+              <span>Étape ${s.id + 1} — ${s.title}</span>
+              ${isDone ? "<span>✅</span>" : isCurrent ? "<span>▶</span>" : "<span>🔒</span>"}
+            </div>
+            ${isCurrent ? `
+              <div class="step-body">
+                <div style="font-size:13px; color:var(--discret); margin-bottom:8px;">${s.desc}</div>
+                ${s.id === 0 ? `<button class="btn btn-primary" id="btn-val-bath">Confirmer le bain et continuer</button>` : ""}
+                ${s.id === 1 ? `<button class="btn btn-primary" id="btn-start-heat">🔥 Lancer le chauffage (5 °C/min)</button>` : ""}
+                ${s.id === 2 ? `<div style="font-weight:600; color:var(--accent);">Chauffage en cours… Les billes descendent.</div>` : ""}
+                ${s.id === 3 ? `
+                  <div class="card" style="background:var(--vert-fond); border-color:var(--vert); text-align:center;">
+                    <div style="font-size:16px; font-weight:700; color:var(--vert);">
+                      ✅ Point bille-anneau = ${fmt1((sim.t1_done + sim.t2_done) / 2)} °C
+                    </div>
+                    <div style="font-size:12.5px; margin-top:4px;">
+                      Écart de ${fmt1(Math.abs(sim.t1_done - sim.t2_done))} °C ≤ 1,0 °C : essai parfaitement valide selon la NF EN 1238.
+                    </div>
+                  </div>` : ""}
+              </div>` : ""}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      const btnBath = document.getElementById("btn-val-bath");
+      if (btnBath) btnBath.onclick = () => { sim.step = 1; renderSteps(); };
+
+      const btnHeat = document.getElementById("btn-start-heat");
+      if (btnHeat) btnHeat.onclick = () => { sim.step = 2; renderSteps(); startHeating(); };
+    }
+
+    document.getElementById("select-sample").onchange = (e) => {
+      sim.sampleKey = e.target.value;
+      initSim();
+    };
+    document.getElementById("select-liquid").onchange = (e) => {
+      sim.bathLiquid = e.target.value;
+      updateVisuals();
+    };
+    document.getElementById("btn-reset-sim").onclick = () => initSim();
+
+    // Exercice Calcul
+    let exoData = {};
+    function genExoCalc() {
+      const t1 = round1(randBetween(65, 115));
+      const diff = round1(randBetween(0.2, 1.6));
+      const t2 = round1(t1 + (Math.random() > 0.5 ? diff : -diff));
+      const realDiff = round1(Math.abs(t1 - t2));
+      const realMean = round1((t1 + t2) / 2);
+      const isValid = realDiff <= 1.0;
+      exoData = { t1, t2, realDiff, realMean, isValid };
+
+      document.getElementById("exo-calc-statement").innerHTML = `
+        Un essai bille-anneau réalisé selon la norme NF EN 1238 donne les températures de contact suivantes :<br>
+        • Anneau 1 : <strong>T₁ = ${fmt1(t1)} °C</strong><br>
+        • Anneau 2 : <strong>T₂ = ${fmt1(t2)} °C</strong><br>
+        Calcule l'écart absolu, la moyenne, et indique si l'essai est valide.
+      `;
+    }
+
+    document.getElementById("btn-verify-calc").onclick = () => {
+      const uDiff = parseFloat(document.getElementById("inp-diff").value.replace(",", "."));
+      const uMean = parseFloat(document.getElementById("inp-mean").value.replace(",", "."));
+      const uValid = document.getElementById("select-valid").value;
+      const fb = document.getElementById("exo-calc-feedback");
+
+      const okDiff = Math.abs(uDiff - exoData.realDiff) <= 0.15;
+      const okMean = Math.abs(uMean - exoData.realMean) <= 0.15;
+      const okValid = (uValid === "oui" && exoData.isValid) || (uValid === "non" && !exoData.isValid);
+
+      if (okDiff && okMean && okValid) {
+        fb.className = "msg-feedback msg-success";
+        fb.innerHTML = `🎉 <strong>Parfait !</strong> Écart = ${fmt1(exoData.realDiff)} °C, Moyenne = ${fmt1(exoData.realMean)} °C. Validité : ${exoData.isValid ? "Valide (≤ 1,0 °C)" : "Non valide (> 1,0 °C)"}.`;
+      } else {
+        fb.className = "msg-feedback msg-error";
+        fb.innerHTML = `Attention : attendu Écart = ${fmt1(exoData.realDiff)} °C, Moyenne = ${fmt1(exoData.realMean)} °C, Validité = ${exoData.isValid ? "Oui" : "Non"}.`;
+      }
+    };
+
+    // Navigation onglets
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        notifyResize();
+      };
+    });
+    document.querySelectorAll(".exo-type-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".exo-type-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".exo-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("exo-panel-" + btn.dataset.exo).classList.add("active");
+      };
+    });
+
+    function notifyResize() {
+      if (window.parent && window.frameElement) {
+        try { window.frameElement.style.height = (document.body.scrollHeight + 50) + "px"; } catch (e) {}
+      }
+    }
+    if (window.ResizeObserver) new ResizeObserver(notifyResize).observe(document.body);
+
+    initSim();
+    genExoCalc();
+  })();
+  </script>
+</body>
+</html>

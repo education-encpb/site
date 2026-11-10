@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Durée pratique d'utilisation (DPU) — Bicomposants</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    :root {
+      --accent: #b45309;
+      --accent-light: #fef3c7;
+      --accent-hover: #92400e;
+      --texte: #1f2937;
+      --titre: #111827;
+      --fond: #ffffff;
+      --carte: #f9fafb;
+      --carte-bord: #e5e7eb;
+      --discret: #6b7280;
+      --vert: #15803d;
+      --vert-fond: #dcfce7;
+      --rouge: #b91c1c;
+      --rouge-fond: #fee2e2;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #d97706;
+        --accent-light: #78350f33;
+        --accent-hover: #f59e0b;
+        --texte: #e5e7eb;
+        --titre: #f9fafb;
+        --fond: #111827;
+        --carte: #1f2937;
+        --carte-bord: #374151;
+        --discret: #9ca3af;
+        --vert: #22c55e;
+        --vert-fond: #14532d44;
+        --rouge: #ef4444;
+        --rouge-fond: #7f1d1d44;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 8px 12px;
+      font: 14.5px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+      width: 100%;
+    }
+    h1, h2, h3 { color: var(--titre); margin: 0 0 6px; }
+    .header-module {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 12px;
+    }
+    .header-icon { font-size: 32px; }
+    .header-titles h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .header-titles p { margin: 0; font-size: 13px; color: var(--discret); }
+
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--carte-bord);
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--discret);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--titre); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .sim-layout {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.15fr) minmax(320px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .sim-layout { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .card {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .sample-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    select, input, button {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--carte-bord);
+      background: var(--fond);
+      color: var(--texte);
+    }
+    select { padding: 4px 8px; }
+
+    .bench-container {
+      background: var(--fond);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .bench-svg { width: 100%; max-width: 460px; height: auto; display: block; }
+
+    .table-notebook {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: center;
+      background: var(--fond);
+    }
+    .table-notebook th, .table-notebook td {
+      border: 1px solid var(--carte-bord);
+      padding: 5px 6px;
+    }
+    .table-notebook th { background: var(--carte); color: var(--titre); font-size: 12px; }
+
+    .info-callout {
+      font-size: 12px;
+      color: var(--discret);
+      font-style: italic;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: var(--carte);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .badge-counter {
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .step-item {
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--fond);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .step-item.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .step-item.done {
+      border-color: var(--carte-bord);
+      background: var(--carte);
+    }
+    .step-head {
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--carte);
+    }
+    .step-item.current .step-head {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .step-body {
+      padding: 10px 12px;
+      border-top: 1px solid var(--carte-bord);
+      font-size: 13.5px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--carte); color: var(--texte); border: 1px solid var(--carte-bord); }
+    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
+    .exo-picker { display: flex; gap: 8px; margin-bottom: 12px; }
+    .exo-type-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--carte-bord);
+      background: var(--carte);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .exo-type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .exo-panel { display: none; }
+    .exo-panel.active { display: block; }
+
+    .essentiel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .essentiel-box {
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--carte);
+    }
+    .essentiel-box h3 {
+      font-size: 14px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--carte-bord);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .msg-feedback {
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .msg-success { background: var(--vert-fond); color: var(--vert); border-left: 3px solid var(--vert); }
+    .msg-error { background: var(--rouge-fond); color: var(--rouge); border-left: 3px solid var(--rouge); }
+
+    @media print {
+      .tabs-nav, .btn, .accordion-header { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#/simulations" target="_top" style="text-decoration:none; color:var(--accent); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-bottom:8px;">← Retour aux simulations Adhésifs</a>
+  <header class="header-module">
+    <div class="header-icon">⏳</div>
+    <div class="header-titles">
+      <h1>Durée pratique d'utilisation (DPU)</h1>
+      <p>Pot life d'un adhésif à deux composants : temps pour que la viscosité double (NF EN 14022)</p>
+    </div>
+  </header>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="simulation">🔬 Simulation</button>
+    <button class="tab-btn" data-tab="exercices">📝 Exercices</button>
+    <button class="tab-btn" data-tab="essentiel">💡 L'essentiel</button>
+  </nav>
+
+  <!-- ONGLET 1 : SIMULATION -->
+  <section id="tab-simulation" class="tab-panel active">
+    <div class="sim-layout">
+
+      <!-- Colonne gauche : Banc de viscosité & Graphique -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>Viscosimètre rotatif</span>
+            <button id="btn-reset-sim" class="btn btn-outline" style="font-size:11px; padding:2px 8px;">🔄 Recommencer</button>
+          </div>
+          <div class="sample-bar">
+            <div>
+              <label for="select-system"><strong>Système :</strong></label>
+              <select id="select-system">
+                <option value="epoxy">Époxy bicomposant (résine + polyamine)</option>
+                <option value="pu">Polyuréthane bicomposant (polyol + isocyanate)</option>
+                <option value="mma">Méthacrylate structural (monomère + peroxyde)</option>
+              </select>
+            </div>
+            <div>
+              <label for="select-temp"><strong>Température :</strong></label>
+              <select id="select-temp">
+                <option value="15">15 °C (réaction plus lente)</option>
+                <option value="20" selected>20 °C (température de référence)</option>
+                <option value="25">25 °C (atelier chaud)</option>
+                <option value="35">35 °C (fortement accéléré)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bench-container">
+            <svg class="bench-svg" viewBox="0 0 380 200" role="img" aria-label="Viscosimètre rotatif et courbe">
+              <!-- VISCOSIMÈTRE (à gauche) -->
+              <g transform="translate(30, 20)">
+                <!-- Bâti support -->
+                <rect x="0" y="140" width="100" height="15" rx="3" fill="#334155"/>
+                <rect x="15" y="0" width="10" height="140" fill="#475569"/>
+                <!-- Tête moteur -->
+                <rect x="5" y="20" width="80" height="40" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+                <!-- Écran viscosimètre -->
+                <rect x="15" y="28" width="60" height="18" rx="2" fill="#022c22"/>
+                <text id="visco-display" x="45" y="41" text-anchor="middle" font-size="9" font-weight="700" fill="#10b981" font-family="monospace">--- Pa·s</text>
+
+                <!-- Tige et mobile rotatif -->
+                <rect x="43" y="60" width="4" height="45" fill="#94a3b8"/>
+                <ellipse id="rotor" cx="45" cy="105" rx="14" ry="4" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
+
+                <!-- Godet réactionnel thermostaté -->
+                <path d="M 25 80 L 25 130 Q 25 135 30 135 L 60 135 Q 65 135 65 130 L 65 80" fill="#f8fafc" opacity="0.6" stroke="#475569" stroke-width="1.5"/>
+                <!-- Mélange A+B dans godet -->
+                <path id="cup-liquid" d="M 26 95 L 26 130 Q 26 134 30 134 L 60 134 Q 64 134 64 130 L 64 95 Z" fill="#f59e0b" opacity="0.85"/>
+              </g>
+
+              <!-- COURBE TEMPS RÉEL (à droite) -->
+              <g transform="translate(160, 25)">
+                <rect x="0" y="0" width="200" height="145" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                <!-- Grille -->
+                <line x1="30" y1="20" x2="190" y2="20" stroke="#e2e8f0" stroke-width="1"/>
+                <line x1="30" y1="60" x2="190" y2="60" stroke="#e2e8f0" stroke-width="1"/>
+                <line x1="30" y1="100" x2="190" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+
+                <!-- Ligne de seuil 2 x eta0 -->
+                <line id="line-threshold" x1="30" y1="60" x2="190" y2="60" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" opacity="0"/>
+                <text id="txt-threshold" x="185" y="55" text-anchor="end" font-size="8" fill="#ef4444" font-weight="700" opacity="0">2 · η₀</text>
+
+                <!-- Axes -->
+                <line x1="30" y1="10" x2="30" y2="125" stroke="#475569" stroke-width="1.5"/>
+                <line x1="30" y1="125" x2="195" y2="125" stroke="#475569" stroke-width="1.5"/>
+                <text x="190" y="138" font-size="8" fill="#64748b" text-anchor="end">temps (min)</text>
+                <text x="25" y="12" font-size="8" fill="#64748b" text-anchor="end">η</text>
+
+                <!-- Courbe dynamique -->
+                <path id="graph-curve" d="M 30 110" fill="none" stroke="#b45309" stroke-width="2.5"/>
+                <!-- Points de mesure -->
+                <g id="graph-points"></g>
+              </g>
+            </svg>
+          </div>
+          <div class="info-callout">
+            La DPU (pot life) est le temps au bout duquel la viscosité mesurée à faible cisaillement a doublé : $\eta(t) = 2 \cdot \eta_0$.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cahier de mesures cinétiques</div>
+          <table class="table-notebook">
+            <thead>
+              <tr>
+                <th>Temps (min)</th>
+                <th>0 (initial)</th>
+                <th>5</th>
+                <th>10</th>
+                <th>15</th>
+                <th>20</th>
+                <th>25</th>
+                <th>30</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-visco">
+                <td><strong>η (Pa·s)</strong></td>
+                <td id="v0">—</td>
+                <td id="v1">—</td>
+                <td id="v2">—</td>
+                <td id="v3">—</td>
+                <td id="v4">—</td>
+                <td id="v5">—</td>
+                <td id="v6">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Colonne droite : Déroulement -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>Déroulement de l'essai</span>
+            <span class="badge-counter" id="step-counter">Étape 1 / 4</span>
+          </div>
+
+          <div id="steps-container"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ONGLET 2 : EXERCICES -->
+  <section id="tab-exercices" class="tab-panel">
+    <div class="card">
+      <div class="exo-picker">
+        <button class="exo-type-btn active" data-exo="calc">🧮 Interpolation linéaire de DPU</button>
+        <button class="exo-type-btn" data-exo="qcm">📋 QCM Notions clés</button>
+      </div>
+
+      <div id="exo-panel-calc" class="exo-panel active">
+        <h3>Calcul de la DPU par interpolation</h3>
+        <p id="exo-calc-statement" style="font-size:13.5px;"></p>
+        <div class="field-row" style="max-width:320px;">
+          <label for="inp-2eta0">Seuil 2·η₀ (Pa·s) :</label>
+          <input type="text" id="inp-2eta0" placeholder="x,xx">
+        </div>
+        <div class="field-row" style="max-width:320px;">
+          <label for="inp-dpu">DPU interpolée (min) :</label>
+          <input type="text" id="inp-dpu" placeholder="xx,x min">
+        </div>
+        <button id="btn-verify-calc" class="btn btn-primary" style="margin-top:8px;">Vérifier</button>
+        <div id="exo-calc-feedback" style="margin-top:8px;"></div>
+      </div>
+
+      <div id="exo-panel-qcm" class="exo-panel">
+        <h3>QCM sur la durée pratique d'utilisation</h3>
+        <p id="exo-qcm-statement" style="font-size:13.5px; font-weight:600;"></p>
+        <div id="exo-qcm-choices"></div>
+        <button id="btn-verify-qcm" class="btn btn-primary" style="margin-top:10px;">Vérifier</button>
+        <div id="exo-qcm-feedback" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONGLET 3 : L'ESSENTIEL -->
+  <section id="tab-essentiel" class="tab-panel">
+    <div class="essentiel-grid">
+      <div class="essentiel-box">
+        <h3>1. Qu'est-ce que la DPU ?</h3>
+        <p>La <strong>Durée Pratique d'Utilisation</strong> (ou <em>pot life</em>) ne concerne que les <strong>adhésifs réactifs à deux composants</strong> (A + B).</p>
+        <p>C'est le délai pendant lequel le mélange reste suffisamment fluide pour être correctement étalé et mouiller les substrats avant gélification.</p>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>2. Définition normalisée (NF EN 14022)</h3>
+        <p>La DPU est le temps nécessaire pour que la viscosité initiale $\eta_0$ (mesurée à faible vitesse de cisaillement) double :</p>
+        <p>$$\eta(\text{DPU}) = 2 \cdot \eta_0$$</p>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>3. Influence de la température</h3>
+        <p>La réaction de polymérisation est thermo-activée (loi d'Arrhenius). Par conséquent :</p>
+        <ul style="padding-left:18px; margin:0; font-size:13px; line-height:1.6;">
+          <li><strong>Si la température augmente :</strong> la DPU diminue fortement (la colle durcit beaucoup plus vite).</li>
+          <li><strong>Masse de mélange (effet de masse) :</strong> une réaction exothermique dans un pot épais auto-accélère la prise.</li>
+        </ul>
+      </div>
+
+      <div class="essentiel-box">
+        <h3>4. Détermination pratique</h3>
+        <p>On mesure $\eta$ à intervalles réguliers. Le seuil $2\eta_0$ étant généralement franchi entre deux mesures $(t_1, \eta_1)$ et $(t_2, \eta_2)$, on calcule la DPU par <strong>interpolation linéaire</strong> :</p>
+        <p>$$\text{DPU} = t_1 + (t_2 - t_1) \cdot \frac{2\eta_0 - \eta_1}{\eta_2 - \eta_1}$$</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCRIPT DU MODULE DPU -->
+  <script>
+  (function () {
+    "use strict";
+
+    const SYSTEMS = {
+      epoxy: { name: "Époxy bicomposant", eta0_ref: 2.4, dpu_20: 22.0 },
+      pu: { name: "Polyuréthane bicomposant", eta0_ref: 1.8, dpu_20: 16.0 },
+      mma: { name: "Méthacrylate structural", eta0_ref: 3.2, dpu_20: 11.0 }
+    };
+
+    let sim = {
+      sysKey: "epoxy",
+      temp: 20,
+      step: 0,
+      eta0: 2.4,
+      threshold: 4.8,
+      dpu_target: 22.0,
+      times: [0, 5, 10, 15, 20, 25, 30],
+      viscosities: [],
+      currentMeasureIdx: 0
+    };
+
+    function randBetween(min, max) { return min + Math.random() * (max - min); }
+    function round2(x) { return Math.round(x * 100) / 100; }
+    function round1(x) { return Math.round(x * 10) / 10; }
+    function fmt2(x) { return x !== null && !isNaN(x) ? Number(x).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "…"; }
+
+    function initSim() {
+      const s = SYSTEMS[sim.sysKey];
+      sim.step = 0;
+      sim.viscosities = [];
+      sim.currentMeasureIdx = 0;
+
+      // Facteur température (DPU diminue avec T)
+      // T=15 -> facteur 1.35, T=20 -> 1.0, T=25 -> 0.72, T=35 -> 0.45
+      const factor = Math.exp(-0.04 * (sim.temp - 20));
+      sim.eta0 = round2(s.eta0_ref * randBetween(0.95, 1.05));
+      sim.threshold = round2(2 * sim.eta0);
+      sim.dpu_target = round1(s.dpu_20 * factor * randBetween(0.95, 1.05));
+
+      // Calcul des viscosités simulées à chaque pas t
+      sim.times.forEach(t => {
+        // Formule exponentielle de montée en viscosité : eta(t) = eta0 * 2^(t / DPU)
+        const v = sim.eta0 * Math.pow(2, t / sim.dpu_target) + randBetween(-0.05, 0.05);
+        sim.viscosities.push(round2(v));
+      });
+
+      render();
+    }
+
+    function render() {
+      document.getElementById("step-counter").textContent = `Étape ${Math.min(sim.step + 1, 4)} / 4`;
+
+      // Afficheur
+      const disp = document.getElementById("visco-display");
+      if (sim.step === 0) disp.textContent = "--- Pa·s";
+      else if (sim.step === 1) disp.textContent = fmt2(sim.eta0) + " Pa·s";
+      else {
+        const curV = sim.viscosities[Math.min(sim.currentMeasureIdx, sim.viscosities.length - 1)];
+        disp.textContent = fmt2(curV) + " Pa·s";
+      }
+
+      // Cahier
+      sim.times.forEach((t, i) => {
+        const cell = document.getElementById("v" + i);
+        if (cell) {
+          cell.textContent = (sim.step >= 2 && i <= sim.currentMeasureIdx) ? fmt2(sim.viscosities[i]) : "—";
+        }
+      });
+
+      // Graphique
+      const lineThresh = document.getElementById("line-threshold");
+      const txtThresh = document.getElementById("txt-threshold");
+      const curve = document.getElementById("graph-curve");
+      const ptsContainer = document.getElementById("graph-points");
+
+      if (sim.step >= 1) {
+        lineThresh.setAttribute("opacity", "1");
+        txtThresh.setAttribute("opacity", "1");
+      } else {
+        lineThresh.setAttribute("opacity", "0");
+        txtThresh.setAttribute("opacity", "0");
+      }
+
+      if (sim.step >= 2 && sim.currentMeasureIdx > 0) {
+        let dStr = "";
+        let ptsHtml = "";
+        for (let i = 0; i <= sim.currentMeasureIdx; i++) {
+          const t = sim.times[i];
+          const v = sim.viscosities[i];
+          // Echelle graphique : t de 0 à 30 -> x de 30 à 190. v de eta0 à 2.8*eta0 -> y de 115 à 20
+          const x = 30 + (t / 30) * 160;
+          const y = 115 - ((v - sim.eta0) / (2.2 * sim.eta0)) * 95;
+          dStr += (i === 0 ? "M " : " L ") + x + " " + y;
+          ptsHtml += `<circle cx="${x}" cy="${y}" r="3" fill="#b45309" stroke="#fff" stroke-width="1"/>`;
+        }
+        curve.setAttribute("d", dStr);
+        ptsContainer.innerHTML = ptsHtml;
+      } else {
+        curve.setAttribute("d", "M 30 115");
+        ptsContainer.innerHTML = "";
+      }
+
+      renderSteps();
+    }
+
+    const STEPS = [
+      { id: 0, title: "Mélanger A + B et démarrer", desc: "Mélanger intimement la résine et le durcisseur à la température choisie." },
+      { id: 1, title: "Mesurer la viscosité initiale η₀", desc: "Mesure de référence au temps t = 0 min à faible taux de cisaillement." },
+      { id: 2, title: "Suivi cinétique (toutes les 5 min)", desc: "Enregistrer la viscosité jusqu'à ce qu'elle dépasse le double de η₀." },
+      { id: 3, title: "Calculer la DPU par interpolation", desc: "Déterminer précisément le temps où η = 2·η₀." }
+    ];
+
+    function renderSteps() {
+      const container = document.getElementById("steps-container");
+      let html = "";
+      STEPS.forEach(s => {
+        const isCurrent = s.id === sim.step;
+        const isDone = s.id < sim.step;
+        html += `
+          <div class="step-item ${isCurrent ? "current" : isDone ? "done" : "locked"}">
+            <div class="step-head">
+              <span>Étape ${s.id + 1} — ${s.title}</span>
+              ${isDone ? "<span>✅</span>" : isCurrent ? "<span>▶</span>" : "<span>🔒</span>"}
+            </div>
+            ${isCurrent ? `
+              <div class="step-body">
+                <div style="font-size:13px; color:var(--discret); margin-bottom:8px;">${s.desc}</div>
+                ${s.id === 0 ? `<button class="btn btn-primary" id="btn-mix">🧪 Mélanger A + B et lancer chrono</button>` : ""}
+                ${s.id === 1 ? `<button class="btn btn-primary" id="btn-eta0">📊 Mesurer η₀</button>` : ""}
+                ${s.id === 2 ? `
+                  <button class="btn btn-primary" id="btn-next-visco">⏱️ Mesure suivante (+5 min)</button>
+                  <span style="font-size:12px; margin-left:8px; color:var(--discret);">Seuil 2·η₀ = ${fmt2(sim.threshold)} Pa·s</span>` : ""}
+                ${s.id === 3 ? `
+                  <div class="card" style="background:var(--vert-fond); border-color:var(--vert); text-align:center;">
+                    <div style="font-size:16px; font-weight:700; color:var(--vert);">
+                      ✅ DPU = ${fmt2(sim.dpu_target)} min à ${sim.temp} °C
+                    </div>
+                    <div style="font-size:12.5px; margin-top:4px;">
+                      Le temps pour doubler la viscosité initiale (${fmt2(sim.eta0)} → ${fmt2(sim.threshold)} Pa·s) est bien caractérisé.
+                    </div>
+                  </div>` : ""}
+              </div>` : ""}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      const btnMix = document.getElementById("btn-mix");
+      if (btnMix) btnMix.onclick = () => { sim.step = 1; render(); };
+
+      const btnEta0 = document.getElementById("btn-eta0");
+      if (btnEta0) btnEta0.onclick = () => { sim.step = 2; sim.currentMeasureIdx = 0; render(); };
+
+      const btnNextV = document.getElementById("btn-next-visco");
+      if (btnNextV) btnNextV.onclick = () => {
+        sim.currentMeasureIdx++;
+        if (sim.viscosities[sim.currentMeasureIdx] >= sim.threshold || sim.currentMeasureIdx >= sim.times.length - 1) {
+          sim.step = 3;
+        }
+        render();
+      };
+    }
+
+    document.getElementById("select-system").onchange = (e) => {
+      sim.sysKey = e.target.value;
+      initSim();
+    };
+    document.getElementById("select-temp").onchange = (e) => {
+      sim.temp = parseInt(e.target.value, 10);
+      initSim();
+    };
+    document.getElementById("btn-reset-sim").onclick = () => initSim();
+
+    // Exercice Calcul
+    let exoData = {};
+    function genExoCalc() {
+      const eta0 = round2(randBetween(2.0, 3.5));
+      const target2 = round2(2 * eta0);
+      const dpu = round1(randBetween(16, 26));
+      // Encadrement entre t1 et t2 multiples de 5
+      const t1 = Math.floor(dpu / 5) * 5;
+      const t2 = t1 + 5;
+      const eta1 = round2(eta0 * Math.pow(2, t1 / dpu));
+      const eta2 = round2(eta0 * Math.pow(2, t2 / dpu));
+      const calcDPU = round1(t1 + (t2 - t1) * ((target2 - eta1) / (eta2 - eta1)));
+      exoData = { eta0, target2, t1, t2, eta1, eta2, calcDPU };
+
+      document.getElementById("exo-calc-statement").innerHTML = `
+        Mesures de viscosité d'une résine époxy à 20 °C :<br>
+        • À t = 0 min : <strong>η₀ = ${fmt2(eta0)} Pa·s</strong><br>
+        • À t = ${t1} min : <strong>η = ${fmt2(eta1)} Pa·s</strong><br>
+        • À t = ${t2} min : <strong>η = ${fmt2(eta2)} Pa·s</strong><br>
+        Calcule le seuil 2·η₀, puis la DPU par interpolation linéaire à 0,5 min près.
+      `;
+    }
+
+    document.getElementById("btn-verify-calc").onclick = () => {
+      const u2 = parseFloat(document.getElementById("inp-2eta0").value.replace(",", "."));
+      const uDpu = parseFloat(document.getElementById("inp-dpu").value.replace(",", "."));
+      const fb = document.getElementById("exo-calc-feedback");
+
+      const ok2 = Math.abs(u2 - exoData.target2) <= 0.05;
+      const okDpu = Math.abs(uDpu - exoData.calcDPU) <= 0.6;
+
+      if (ok2 && okDpu) {
+        fb.className = "msg-feedback msg-success";
+        fb.innerHTML = `🎉 <strong>Exact !</strong> Seuil 2·η₀ = ${fmt2(exoData.target2)} Pa·s, DPU interpolée = <strong>${fmt2(exoData.calcDPU)} min</strong>.`;
+      } else {
+        fb.className = "msg-feedback msg-error";
+        fb.innerHTML = `Attendu : 2·η₀ = ${fmt2(exoData.target2)} Pa·s, DPU = ${fmt2(exoData.calcDPU)} min.`;
+      }
+    };
+
+    // Navigation
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        notifyResize();
+      };
+    });
+    document.querySelectorAll(".exo-type-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".exo-type-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".exo-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("exo-panel-" + btn.dataset.exo).classList.add("active");
+      };
+    });
+
+    function notifyResize() {
+      if (window.parent && window.frameElement) {
+        try { window.frameElement.style.height = (document.body.scrollHeight + 50) + "px"; } catch (e) {}
+      }
+    }
+    if (window.ResizeObserver) new ResizeObserver(notifyResize).observe(document.body);
+
+    initSim();
+    genExoCalc();
+  })();
+  </script>
+</body>
+</html>

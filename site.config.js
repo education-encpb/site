@@ -9,24 +9,34 @@
 // ============================================================
 
 window.SITE = {
-  titre: "Formu au labo",
-  sousTitre: "Chimie — BTS Métiers de la chimie",
+  titre: "Simulations MDC",
+  sousTitre: "BTS Métiers de la chimie",
   auteur: "Marco Reula",
 
-  // Couleur principale (boutons, liens, menu actif). Code couleur au format #RRGGBB.
-  couleur: "#b45309",
+  // Couleur principale
+  couleur: "#4f46e5",
 
-  // Page affichée à l'ouverture du site.
-  accueil: "accueil",
+  // Page affichée à l'ouverture du site : directement Simulations (Adhésifs)
+  accueil: "simulations",
 
-  // Le menu : seulement la rubrique Simulations
+  // Le menu principal
   menu: [
     {
-      rubrique: "Simulations",
+      rubrique: "Navigation",
       pages: [
-        { id: "accueil", titre: "Catalogue des simulations", fichier: "pages/accueil.html" },
-        { id: "masse-volumique", titre: "Masse volumique (Hubbard)", fichier: "pages/masse-volumique.html" },
-        { id: "extrait-sec", titre: "Extrait sec (étuve)", fichier: "pages/extrait-sec.html" },
+        { id: "accueil", titre: "🏠 Accueil", fichier: "pages/intro.html" },
+        { id: "simulations", titre: "📚 Simulations", fichier: "pages/adhesifs.html" },
+        { id: "outils", titre: "🛠️ Outils", fichier: "pages/outils.html" },
+        { id: "liens-ext", titre: "🔗 Liens ext", fichier: "pages/liens.html" },
+      ],
+    },
+    {
+      rubrique: "SimulationsModules",
+      pages: [
+        { id: "masse-volumique", titre: "Masse volumique", fichier: "pages/masse-volumique.html" },
+        { id: "extrait-sec", titre: "Extrait sec", fichier: "pages/extrait-sec.html" },
+        { id: "bille-anneau", titre: "Point de ramollissement bille-anneau", fichier: "pages/bille-anneau.html" },
+        { id: "dpu", titre: "Durée pratique d'utilisation (DPU)", fichier: "pages/dpu.html" },
       ],
     },
   ],

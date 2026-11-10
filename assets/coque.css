@@ -29,28 +29,43 @@ body {
 }
 .entete {
   display: flex; align-items: center; gap: 12px;
-  padding: 10px 16px; border-bottom: 3px solid var(--accent);
+  padding: 12px 20px; background: #13161f;
+  border-bottom: 1px solid #1e2433;
 }
-.titre { font-weight: 600; color: var(--accent); font-size: 19px; }
-.sous-titre { font-size: 14px; color: var(--discret); }
-.burger { display: none; font-size: 22px; background: none; border: 0; color: var(--titre); cursor: pointer; }
+.titre { font-weight: 700; color: #ffffff; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.titre::before { content: "◎"; font-size: 19px; color: #818cf8; }
+.sous-titre { font-size: 13px; color: #94a3b8; }
+.burger { display: none; font-size: 22px; background: none; border: 0; color: #ffffff; cursor: pointer; }
 .cadre { display: flex; min-height: calc(100vh - 110px); }
-.menu { width: 230px; flex-shrink: 0; padding: 12px 10px; border-right: 1px solid var(--bord); }
-.menu h2 {
-  font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--discret); margin: 14px 8px 4px;
-}
+.menu { width: 240px; flex-shrink: 0; padding: 14px 10px; background: #13161f; border-right: 1px solid #1e2433; }
+.menu h2 { display: none !important; }
 .menu a {
-  display: block; padding: 6px 10px; border-radius: 8px;
-  color: var(--texte); text-decoration: none; font-size: 15px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 12px; margin: 4px 0;
+  color: #94a3b8; text-decoration: none; font-size: 15px; font-weight: 500;
+  transition: all 0.15s ease-in-out;
 }
-.menu a:hover { background: var(--carte); }
-.menu a.actif {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent); font-weight: 600;
+.menu a:hover { background: #1e2433; color: #ffffff; }
+.menu a.actif,
+.menu:has(a[data-id="masse-volumique"].actif) a[data-id="simulations"],
+.menu:has(a[data-id="extrait-sec"].actif) a[data-id="simulations"],
+.menu:has(a[data-id="bille-anneau"].actif) a[data-id="simulations"],
+.menu:has(a[data-id="dpu"].actif) a[data-id="simulations"] {
+  background: #4338ca !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.35);
+}
+/* Masquer les pages filles de simulation du menu latéral pour n'avoir que les 4 rubriques principales */
+.menu a[data-id="masse-volumique"],
+.menu a[data-id="extrait-sec"],
+.menu a[data-id="bille-anneau"],
+.menu a[data-id="dpu"] {
+  display: none !important;
 }
 .contenu { flex: 1; min-width: 0; padding: 16px 24px 40px; max-width: 1350px; }
 .contenu:has(iframe) { max-width: 100%; padding: 12px 18px 40px; }
+.contenu:has(iframe) > h1 { display: none; }
 .contenu h1, .contenu h2, .contenu h3 { color: var(--titre); line-height: 1.25; }
 .contenu h1 { font-size: 26px; margin-top: 4px; }
 .contenu a { color: var(--accent); }
