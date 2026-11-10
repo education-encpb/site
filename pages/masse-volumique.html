@@ -1,0 +1,2180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masse volumique — Pycnomètre de Hubbard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <style>
+    :root {
+      --accent: #b45309;
+      --accent-light: #fef3c7;
+      --accent-hover: #92400e;
+      --texte: #1f2937;
+      --titre: #111827;
+      --fond: #ffffff;
+      --carte: #f9fafb;
+      --carte-bord: #e5e7eb;
+      --discret: #6b7280;
+      --vert: #15803d;
+      --vert-fond: #dcfce7;
+      --rouge: #b91c1c;
+      --rouge-fond: #fee2e2;
+      --bleu: #1d4ed8;
+      --bleu-eau: #93c5fd;
+      --ambre-colle: #f59e0b;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #d97706;
+        --accent-light: #78350f33;
+        --accent-hover: #f59e0b;
+        --texte: #e5e7eb;
+        --titre: #f9fafb;
+        --fond: #111827;
+        --carte: #1f2937;
+        --carte-bord: #374151;
+        --discret: #9ca3af;
+        --vert: #22c55e;
+        --vert-fond: #14532d44;
+        --rouge: #ef4444;
+        --rouge-fond: #7f1d1d44;
+        --bleu-eau: #60a5fa;
+        --ambre-colle: #fbbf24;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px;
+      font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+    }
+    h1, h2, h3 { color: var(--titre); margin: 0 0 6px; }
+    .header-module {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 12px;
+    }
+    .header-icon { font-size: 32px; }
+    .header-titles h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .header-titles p { margin: 0; font-size: 13px; color: var(--discret); }
+
+    /* Onglets principaux */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--carte-bord);
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--discret);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--titre); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Grille Simulation */
+    .sim-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      .sim-layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    /* Sélecteur d'échantillon */
+    .sample-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    select, input, button {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--carte-bord);
+      background: var(--fond);
+      color: var(--texte);
+    }
+    select { padding: 4px 8px; }
+
+    /* Banc d'essai SVG */
+    .bench-container {
+      background: var(--fond);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 6px;
+      display: flex;
+      justify-content: center;
+    }
+    .bench-svg { width: 100%; max-width: 440px; height: auto; display: block; }
+
+    /* Afficheur balance */
+    .balance-display {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      fill: #10b981;
+    }
+
+    /* Cahier de mesures */
+    .table-notebook {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: center;
+      background: var(--fond);
+    }
+    .table-notebook th, .table-notebook td {
+      border: 1px solid var(--carte-bord);
+      padding: 5px 6px;
+    }
+    .table-notebook th {
+      background: var(--carte);
+      color: var(--titre);
+      font-size: 12px;
+    }
+    .info-callout {
+      font-size: 12px;
+      color: var(--discret);
+      font-style: italic;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: var(--carte);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+    .formulas-preview {
+      margin-top: 8px;
+      padding: 8px;
+      background: var(--fond);
+      border: 1px dashed var(--carte-bord);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    /* Colonne de droite : Accordéon des 12 étapes */
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .badge-counter {
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .step-item {
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--fond);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .step-item.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .step-item.done {
+      border-color: var(--carte-bord);
+      background: var(--carte);
+    }
+    .step-item.locked {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+    .step-head {
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      background: var(--carte);
+    }
+    .step-item.current .step-head {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .step-body {
+      padding: 10px 12px;
+      border-top: 1px solid var(--carte-bord);
+      font-size: 13.5px;
+    }
+    .step-instruction {
+      color: var(--discret);
+      margin-bottom: 8px;
+    }
+    .step-summary {
+      color: var(--vert);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Boutons d'action */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-secondary {
+      background: var(--carte);
+      color: var(--texte);
+      border: 1px solid var(--carte-bord);
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--carte-bord); }
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--accent-light); }
+
+    /* Table interactive de l'eau (Étape 4) */
+    .table-water {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .table-water th, .table-water td {
+      border: 1px solid var(--carte-bord);
+      padding: 5px 8px;
+      text-align: center;
+    }
+    .table-water th { background: var(--carte); font-size: 12px; }
+    .table-water tr.clickable { cursor: pointer; transition: background 0.15s; }
+    .table-water tr.clickable:hover { background: var(--carte); }
+    .table-water tr.selected-good {
+      background: var(--vert-fond) !important;
+      color: var(--vert);
+      font-weight: 700;
+    }
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .msg-feedback {
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .msg-error {
+      background: var(--rouge-fond);
+      color: var(--rouge);
+      border-left: 3px solid var(--rouge);
+    }
+    .msg-success {
+      background: var(--vert-fond);
+      color: var(--vert);
+      border-left: 3px solid var(--vert);
+    }
+
+    /* Modal calcul */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 12px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-content {
+      background: var(--fond);
+      border-radius: 10px;
+      border: 1px solid var(--carte-bord);
+      width: 100%;
+      max-width: 540px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--carte-bord);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .modal-body { font-size: 14px; line-height: 1.6; }
+    .calc-box {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .calc-result-box {
+      border: 2px solid var(--vert);
+      background: var(--vert-fond);
+      color: var(--vert);
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-align: center;
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    /* Onglet Exercices */
+    .exo-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .exo-buttons { display: flex; gap: 6px; }
+    .exo-type-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--carte-bord);
+      background: var(--carte);
+      color: var(--texte);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .exo-type-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .exo-panel { display: none; }
+    .exo-panel.active { display: block; }
+    .exo-grid-calc {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 720px) {
+      .exo-grid-calc { grid-template-columns: 1fr; }
+    }
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13.5px;
+    }
+    .field-row input {
+      width: 120px;
+      padding: 4px 8px;
+      text-align: right;
+    }
+    .input-good { border-color: var(--vert) !important; background: var(--vert-fond) !important; }
+    .input-bad { border-color: var(--rouge) !important; background: var(--rouge-fond) !important; }
+
+    /* Exercice Trouver l'erreur */
+    .error-sentence {
+      padding: 8px 12px;
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      background: var(--fond);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 13.5px;
+    }
+    .error-sentence:hover { background: var(--carte); }
+    .error-sentence.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* Exercice Remettre en ordre */
+    .reorder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 10px 0;
+    }
+    .reorder-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--carte-bord);
+      border-radius: 6px;
+      background: var(--fond);
+      font-size: 13px;
+      user-select: none;
+      cursor: grab;
+    }
+    .reorder-item.dragging { opacity: 0.5; background: var(--carte); }
+    .reorder-handle { color: var(--discret); font-size: 16px; cursor: grab; padding: 0 4px; }
+    .reorder-text { flex: 1; }
+    .reorder-arrows { display: flex; flex-direction: column; gap: 2px; }
+    .reorder-arrows button {
+      padding: 0 4px;
+      font-size: 10px;
+      line-height: 1;
+      height: 16px;
+      border: 1px solid var(--carte-bord);
+      background: var(--carte);
+      cursor: pointer;
+    }
+
+    /* Onglet L'essentiel */
+    .essentiel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 760px) {
+      .essentiel-grid { grid-template-columns: 1fr; }
+    }
+    .essentiel-box {
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--carte);
+    }
+    .essentiel-box h3 {
+      font-size: 14px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--carte-bord);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    /* Rapport imprimable */
+    @media print {
+      body { background: #fff !important; color: #000 !important; padding: 0; }
+      .tabs-nav, .btn, .step-item:not(.current):not(.done), .accordion-header, .exo-picker, .exo-buttons {
+        display: none !important;
+      }
+      .card { border: 1px solid #999 !important; background: #fff !important; }
+      .modal-overlay { display: none !important; }
+      .tab-panel { display: block !important; }
+      #tab-exercices, #tab-essentiel { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- En-tête -->
+  <header class="header-module">
+    <div class="header-icon">⚖️</div>
+    <div class="header-titles">
+      <h1>Masse volumique</h1>
+      <p>Pycnomètre de type Hubbard — adhésifs liquides comportant des solvants volatils (Fiche Cf13)</p>
+    </div>
+  </header>
+
+  <!-- Navigation des 3 onglets -->
+  <nav class="tabs-nav" aria-label="Sections du module">
+    <button class="tab-btn active" data-tab="simulation">🔬 Simulation</button>
+    <button class="tab-btn" data-tab="exercices">📝 Exercices</button>
+    <button class="tab-btn" data-tab="essentiel">💡 L'essentiel</button>
+  </nav>
+
+  <!-- ============================================================== -->
+  <!-- ONGLET 1 : SIMULATION                                          -->
+  <!-- ============================================================== -->
+  <section id="tab-simulation" class="tab-panel active">
+    <div class="sim-layout">
+
+      <!-- Colonne GAUCHE : Échantillon & Banc d'essai & Cahier -->
+      <div class="sim-col-left">
+
+        <!-- Panneau Échantillon -->
+        <div class="card">
+          <div class="card-title">
+            <span>Échantillon & Banc d'essai</span>
+            <button id="btn-new-sim" class="btn btn-outline" style="font-size:11px; padding:2px 8px;">🔄 Recommencer</button>
+          </div>
+          <div class="sample-bar">
+            <label for="select-adh-type"><strong>Adhésif :</strong></label>
+            <select id="select-adh-type">
+              <option value="pc">Polychloroprène en solution</option>
+              <option value="pu">Polyuréthane en solution</option>
+              <option value="sbs">Caoutchouc SBS en solution</option>
+              <option value="acr">Acrylique en solution</option>
+            </select>
+          </div>
+
+          <!-- Banc d'essai SVG -->
+          <div class="bench-container">
+            <svg class="bench-svg" viewBox="0 0 380 220" role="img" aria-label="Banc d'essai pycnomètre et balance">
+              <defs>
+                <!-- Motif hachures ou reflets -->
+                <linearGradient id="grad-thermo" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ef4444"/>
+                  <stop offset="100%" stop-color="#b91c1c"/>
+                </linearGradient>
+                <linearGradient id="grad-glass" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#e2e8f0" stop-opacity="0.7"/>
+                  <stop offset="50%" stop-color="#f8fafc" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.7"/>
+                </linearGradient>
+              </defs>
+
+              <!-- THERMOMÈTRE D'AMBIANCE (à gauche) -->
+              <g id="svg-thermo" transform="translate(30, 20)">
+                <!-- Support bois -->
+                <rect x="-8" y="0" width="36" height="160" rx="4" fill="#d97706" opacity="0.2"/>
+                <rect x="-8" y="0" width="36" height="160" rx="4" fill="none" stroke="#b45309" stroke-width="1.5"/>
+                <!-- Tube verre -->
+                <rect x="6" y="15" width="8" height="115" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+                <!-- Bulbe -->
+                <circle cx="10" cy="135" r="11" fill="url(#grad-thermo)" stroke="#991b1b" stroke-width="1.5"/>
+                <!-- Colonne rouge dynamique -->
+                <rect id="thermo-col" x="8" y="70" width="4" height="60" fill="url(#grad-thermo)"/>
+                <!-- Graduations -->
+                <line x1="16" y1="35" x2="22" y2="35" stroke="#475569" stroke-width="1.5"/>
+                <text x="25" y="38" font-size="8" fill="#475569">25°</text>
+                <line x1="16" y1="65" x2="20" y2="65" stroke="#475569" stroke-width="1"/>
+                <text x="25" y="68" font-size="8" fill="#475569">20°</text>
+                <line x1="16" y1="95" x2="22" y2="95" stroke="#475569" stroke-width="1.5"/>
+                <text x="25" y="98" font-size="8" fill="#475569">15°</text>
+                <!-- Valeur température sous le thermomètre -->
+                <text id="thermo-val" x="10" y="175" text-anchor="middle" font-size="11" font-weight="700" fill="#b45309">21 °C</text>
+                <text x="10" y="187" text-anchor="middle" font-size="9" fill="#64748b">salle</text>
+              </g>
+
+              <!-- BALANCE DE PRÉCISION (centre / droite) -->
+              <g id="svg-balance" transform="translate(130, 40)">
+                <!-- Socle balance -->
+                <path d="M 10 140 L 210 140 L 200 170 L 20 170 Z" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+                <!-- Écran digital -->
+                <rect x="65" y="146" width="90" height="18" rx="3" fill="#022c22" stroke="#065f46" stroke-width="1"/>
+                <text id="balance-txt" class="balance-display" x="110" y="160" text-anchor="middle" font-size="12">---.--- g</text>
+                <text x="110" y="178" text-anchor="middle" font-size="8" fill="#94a3b8">balance — 1 mg</text>
+
+                <!-- Bouton tare -->
+                <circle cx="45" cy="155" r="4" fill="#64748b"/>
+                <text x="45" y="165" text-anchor="middle" font-size="6" fill="#94a3b8">TARE</text>
+
+                <!-- Tige et plateau -->
+                <rect x="106" y="125" width="8" height="15" fill="#94a3b8"/>
+                <path d="M 40 125 L 180 125 L 175 120 L 45 120 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+
+                <!-- PYCNOMÈTRE DE HUBBARD (sur le plateau) -->
+                <g id="pycno-group" transform="translate(75, 45)">
+                  <!-- Niveau liquide intérieur -->
+                  <rect id="pycno-liquid" x="18" y="72" width="34" height="0" rx="2" fill="#93c5fd" opacity="0.85"/>
+
+                  <!-- Corps en verre épais Hubbard -->
+                  <path d="M 15 35 L 25 35 L 25 25 L 45 25 L 45 35 L 55 35 L 55 74 Q 55 75 54 75 L 16 75 Q 15 75 15 74 Z"
+                        fill="url(#grad-glass)" stroke="#475569" stroke-width="1.8"/>
+
+                  <!-- Bouchon rodé avec capillaire -->
+                  <g id="pycno-stopper">
+                    <path d="M 27 25 L 27 10 L 43 10 L 43 25 Z" fill="#94a3b8" stroke="#334155" stroke-width="1.2"/>
+                    <!-- Capillaire central -->
+                    <line x1="35" y1="6" x2="35" y2="25" stroke="#0f172a" stroke-width="1" stroke-dasharray="2,1"/>
+                  </g>
+
+                  <!-- Étiquette 100 mL -->
+                  <rect x="22" y="48" width="26" height="12" rx="2" fill="#ffffff" opacity="0.85" stroke="#94a3b8" stroke-width="0.5"/>
+                  <text x="35" y="57" text-anchor="middle" font-size="7" font-weight="700" fill="#334155">100 mL</text>
+                </g>
+
+                <!-- EFFETS ANIMÉS : Filet de liquide (eau / colle) -->
+                <line id="liquid-stream" x1="110" y1="15" x2="110" y2="85" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="4,3" opacity="0"/>
+                <!-- Bécher verseur -->
+                <g id="beaker" transform="translate(115, 0) rotate(-35)" opacity="0">
+                  <path d="M 0 0 L 25 0 L 22 35 L 3 35 Z" fill="#e2e8f0" opacity="0.7" stroke="#475569" stroke-width="1"/>
+                </g>
+                <!-- Étincelles propre/sec -->
+                <g id="sparkles" opacity="0">
+                  <text x="85" y="60" font-size="14">✨</text>
+                  <text x="135" y="70" font-size="12">✨</text>
+                  <text x="110" y="45" font-size="10">✨</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="info-callout">
+            Le pycnomètre Hubbard est utilisé uniquement pour les adhésifs liquides comportant des solvants volatils. Données d'échantillon fictives.
+          </div>
+        </div>
+
+        <!-- Cahier de mesures -->
+        <div class="card">
+          <div class="card-title">Cahier de mesures</div>
+          <table class="table-notebook">
+            <thead>
+              <tr>
+                <th>Mesure</th>
+                <th>m₀ (g)</th>
+                <th>m₁ (g)</th>
+                <th>V (mL)</th>
+                <th>m₂ (g)</th>
+                <th>ρ (g/mL)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-mesure-1">
+                <td><strong>1</strong></td>
+                <td id="cell-m0-1">…</td>
+                <td id="cell-m1-1">…</td>
+                <td id="cell-V-1">…</td>
+                <td id="cell-m2-1">…</td>
+                <td id="cell-rho-1">…</td>
+              </tr>
+              <tr id="row-mesure-2" style="display:none;">
+                <td><strong>2</strong></td>
+                <td id="cell-m0-2">…</td>
+                <td id="cell-m1-2">…</td>
+                <td id="cell-V-2">…</td>
+                <td id="cell-m2-2">…</td>
+                <td id="cell-rho-2">…</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Formules dynamiques calculées -->
+          <div id="dynamic-formulas" class="formulas-preview" style="display:none;"></div>
+        </div>
+
+      </div>
+
+      <!-- Colonne DROITE : Accordéon des 12 étapes -->
+      <div class="sim-col-right">
+        <div class="card">
+          <div class="accordion-header">
+            <span style="font-weight:700; font-size:14px; text-transform:uppercase; color:var(--accent);">Étapes du protocole</span>
+            <span class="badge-counter" id="step-counter">0 / 12</span>
+          </div>
+
+          <div id="steps-container">
+            <!-- Les 12 étapes sont générées par JS -->
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+            <button id="btn-toggle-prev" class="btn btn-secondary" style="font-size:12px; display:none;">👁️ Voir les étapes précédentes (<span id="prev-count">0</span>)</button>
+            <button id="btn-reset-sim" class="btn btn-outline" style="font-size:12px;">Nouvelle simulation</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- ONGLET 2 : EXERCICES                                           -->
+  <!-- ============================================================== -->
+  <section id="tab-exercices" class="tab-panel">
+    <div class="card">
+      <div class="exo-picker">
+        <div class="exo-buttons">
+          <button class="exo-type-btn active" data-exo="calc">🧮 Calcul</button>
+          <button class="exo-type-btn" data-exo="error">🔍 Trouver l'erreur</button>
+          <button class="exo-type-btn" data-exo="reorder">↕️ Remettre en ordre</button>
+        </div>
+        <button id="btn-new-exo" class="btn btn-primary" style="font-size:12px;">Nouvel exercice</button>
+      </div>
+      <div class="info-callout" style="margin-bottom:12px;">
+        Les exercices sont tirés au hasard à chaque « Nouvel exercice ». Aucun score n'est enregistré pour l'instant.
+      </div>
+
+      <!-- Sous-panneau 1 : Calcul -->
+      <div id="exo-panel-calc" class="exo-panel active">
+        <div class="exo-grid-calc">
+          <div>
+            <h3>Énoncé</h3>
+            <p id="exo-calc-statement" style="font-size:13.5px;"></p>
+            <div class="info-callout">
+              Donne ρeau avec 4 décimales, V au centième de mL, les masses volumiques avec 4 décimales. Écart type expérimental (convention n − 1).
+            </div>
+            <h4 style="margin:10px 0 4px; font-size:13px;">Masse volumique de l'eau (table Cf13) :</h4>
+            <table class="table-water" style="max-width:280px;">
+              <thead><tr><th>T (°C)</th><th>ρeau (g/mL)</th></tr></thead>
+              <tbody>
+                <tr><td>19</td><td>0,9984</td></tr>
+                <tr><td>20</td><td>0,9982</td></tr>
+                <tr><td>21</td><td>0,9980</td></tr>
+                <tr><td>22</td><td>0,9978</td></tr>
+                <tr><td>23</td><td>0,9975</td></tr>
+                <tr><td>24</td><td>0,9973</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3>Tes réponses</h3>
+            <div class="field-row">
+              <label for="inp-exo-rhoeau">ρeau (g/mL) :</label>
+              <input type="text" id="inp-exo-rhoeau" placeholder="0,998x">
+            </div>
+            <div class="field-row">
+              <label for="inp-exo-V">Volume V (mL) :</label>
+              <input type="text" id="inp-exo-V" placeholder="100,xx">
+            </div>
+            <div class="field-row">
+              <label for="inp-exo-rho1">ρ₁ (g/mL) :</label>
+              <input type="text" id="inp-exo-rho1" placeholder="0,xxxx">
+            </div>
+            <div class="field-row">
+              <label for="inp-exo-rho2">ρ₂ (g/mL) :</label>
+              <input type="text" id="inp-exo-rho2" placeholder="0,xxxx">
+            </div>
+            <div class="field-row">
+              <label for="inp-exo-rhobar">Moyenne ρ̄ (g/mL) :</label>
+              <input type="text" id="inp-exo-rhobar" placeholder="0,xxxx">
+            </div>
+            <div class="field-row">
+              <label for="inp-exo-s">Écart type s (g/mL) :</label>
+              <input type="text" id="inp-exo-s" placeholder="0,00xx">
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button id="btn-verify-calc" class="btn btn-primary">Vérifier</button>
+              <button id="btn-corr-calc-step" class="btn btn-secondary">Étape suivante</button>
+              <button id="btn-corr-calc-all" class="btn btn-outline">Tout afficher</button>
+            </div>
+            <div id="exo-calc-feedback" style="margin-top:8px;"></div>
+            <div id="exo-calc-solution" class="calc-box" style="display:none; font-size:13px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sous-panneau 2 : Trouver l'erreur -->
+      <div id="exo-panel-error" class="exo-panel">
+        <h3>Trouver l'erreur</h3>
+        <p id="exo-error-statement" style="font-size:13.5px; margin-bottom:10px;">
+          Voici le compte rendu d'un élève. Une seule phrase contient une erreur : laquelle ?
+        </p>
+        <div id="error-sentences-list"></div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button id="btn-verify-error" class="btn btn-primary">Vérifier la réponse</button>
+        </div>
+        <div id="exo-error-feedback" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Sous-panneau 3 : Remettre en ordre -->
+      <div id="exo-panel-reorder" class="exo-panel">
+        <h3>Remettre les étapes dans l'ordre</h3>
+        <p style="font-size:13.5px;">
+          Remets les étapes du protocole dans l'ordre (glisse avec la poignée ⠿ ou utilise les flèches ↑ ↓).
+        </p>
+        <div id="reorder-container" class="reorder-list"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="btn-verify-reorder" class="btn btn-primary">Vérifier</button>
+          <button id="btn-corr-reorder" class="btn btn-secondary">Correction</button>
+        </div>
+        <div id="exo-reorder-feedback" style="margin-top:10px;"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- ONGLET 3 : L'ESSENTIEL                                         -->
+  <!-- ============================================================== -->
+  <section id="tab-essentiel" class="tab-panel">
+    <div class="essentiel-grid">
+      <!-- Bloc 1 -->
+      <div class="essentiel-box">
+        <h3>1. Quand l'utiliser ?</h3>
+        <p>On utilise un <strong>pycnomètre de type Hubbard</strong> uniquement pour mesurer la masse volumique des <strong>adhésifs liquides comportant des solvants volatils</strong>.</p>
+        <p>Les masses volumiques des colles pour emballages sont généralement comprises entre <strong>0,85 et 1,1 kg/L</strong> (soit 0,85 à 1,1 g/mL).</p>
+      </div>
+
+      <!-- Bloc 2 -->
+      <div class="essentiel-box">
+        <h3>2. Protocole expérimental (Cf13)</h3>
+        <ol style="padding-left:18px; margin:0; font-size:13px; line-height:1.6;">
+          <li>Nettoyer puis sécher le pycnomètre.</li>
+          <li>Le peser à 1 mg près : <strong>m₀</strong>.</li>
+          <li>Le remplir d'eau distillée à température ambiante et peser : <strong>m₁</strong>.</li>
+          <li>En déduire, à l'aide du tableau, le volume exact du pycnomètre : <strong>V</strong>.</li>
+          <li>Sécher le pycnomètre, le remplir avec l'adhésif liquide (à température ambiante) et peser : <strong>m₂</strong>.</li>
+          <li>Faire la moyenne de deux mesures et rendre le résultat avec un écart type.</li>
+        </ol>
+      </div>
+
+      <!-- Bloc 3 -->
+      <div class="essentiel-box">
+        <h3>3. Formules de calcul</h3>
+        <ul style="padding-left:18px; margin:0; font-size:13px; line-height:1.6;">
+          <li><strong>Volume du pycnomètre :</strong><br>
+            <span class="katex-render" data-tex="V = \frac{m_1 - m_0}{\rho_{\text{eau}}(T)}">V = (m₁ − m₀) / ρeau(T)</span> (en mL, au centième)
+          </li>
+          <li style="margin-top:6px;"><strong>Masse volumique de l'adhésif :</strong><br>
+            <span class="katex-render" data-tex="\rho = \frac{m_2 - m_0}{V}">ρ = (m₂ − m₀) / V</span> (en g/mL, 4 décimales)
+          </li>
+          <li style="margin-top:6px;"><strong>Moyenne :</strong><br>
+            <span class="katex-render" data-tex="\bar{\rho} = \frac{\rho_1 + \rho_2}{2}">ρ̄ = (ρ₁ + ρ₂) / 2</span>
+          </li>
+          <li style="margin-top:6px;"><strong>Écart type expérimental (n − 1) :</strong><br>
+            <span class="katex-render" data-tex="s = \sqrt{\frac{\sum (\rho_i - \bar{\rho})^2}{n-1}} = \frac{|\rho_1 - \rho_2|}{\sqrt{2}}">s = |ρ₁ − ρ₂| / √2</span>
+          </li>
+          <li style="margin-top:6px;"><strong>Résultat :</strong> <strong>ρ = ρ̄ ± s g/mL</strong> (ou kg/L).</li>
+        </ul>
+      </div>
+
+      <!-- Bloc 4 -->
+      <div class="essentiel-box">
+        <h3>4. Masse volumique de l'eau distillée</h3>
+        <p style="font-size:12px; color:var(--discret); margin-bottom:6px;">Table de la fiche Cf13 (à ne pas interpoler ni étendre) :</p>
+        <table class="table-water">
+          <thead><tr><th>Température (°C)</th><th>ρeau (g·mL⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td>19</td><td>0,9984</td></tr>
+            <tr><td>20</td><td>0,9982</td></tr>
+            <tr><td>21</td><td>0,9980</td></tr>
+            <tr><td>22</td><td>0,9978</td></tr>
+            <tr><td>23</td><td>0,9975</td></tr>
+            <tr><td>24</td><td>0,9973</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- MODALE : Montrer le calcul                                     -->
+  <!-- ============================================================== -->
+  <div id="calc-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" style="margin:0; font-size:16px;">Détail du calcul</h3>
+        <button id="btn-close-modal" class="btn btn-secondary" style="padding:2px 8px;">✕</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
+        <button id="btn-modal-close-action" class="btn btn-secondary">Fermer</button>
+        <button id="btn-modal-next-action" class="btn btn-primary">Étape suivante →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT DU MODULE -->
+  <script>
+  (function () {
+    "use strict";
+
+    // --- Données de référence fiche Cf13 ---
+    const RHO_EAU_TABLE = {
+      19: 0.9984,
+      20: 0.9982,
+      21: 0.9980,
+      22: 0.9978,
+      23: 0.9975,
+      24: 0.9973
+    };
+
+    const ADH_TYPES = {
+      pc: "adhésif polychloroprène en solution",
+      pu: "adhésif polyuréthane en solution",
+      sbs: "adhésif caoutchouc SBS en solution",
+      acr: "adhésif acrylique en solution"
+    };
+
+    // --- Utilitaires mathématiques & formatage français ---
+    function randUniform(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function randGauss(sigma) {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v) * sigma;
+    }
+
+    function roundDec(val, dec) {
+      const p = Math.pow(10, dec);
+      return Math.round(val * p) / p;
+    }
+
+    function fmtFr(val, dec) {
+      if (val === null || val === undefined || isNaN(val)) return "…";
+      return Number(val).toLocaleString("fr-FR", {
+        minimumFractionDigits: dec,
+        maximumFractionDigits: dec
+      });
+    }
+
+    function parseFr(str) {
+      if (!str) return NaN;
+      return parseFloat(String(str).trim().replace(/\s/g, "").replace(",", "."));
+    }
+
+    function renderKatex(tex, elem) {
+      if (window.katex) {
+        try {
+          katex.render(tex, elem, { throwOnError: false });
+          return;
+        } catch (e) {}
+      }
+      elem.textContent = tex;
+    }
+
+    function renderAllKatex() {
+      document.querySelectorAll(".katex-render").forEach(el => {
+        const tex = el.dataset.tex;
+        if (tex) renderKatex(tex, el);
+      });
+    }
+
+    // --- État de la simulation ---
+    const STORAGE_KEY = "hubbard_sim_state_v1";
+
+    let state = {
+      activeTab: "simulation",
+      // Échantillon
+      adhType: "pc",
+      T: 21,
+      V_true: 100.00,
+      m0_true: 160.00,
+      rho_true: 0.94,
+      // Mesure 1
+      m0_1: null,
+      m1_1: null,
+      rho_eau_choice: null,
+      V_calc_1: null,
+      m2_1: null,
+      rho_calc_1: null,
+      // Mesure 2
+      m0_2: null,
+      m1_2: null,
+      V_calc_2: null,
+      m2_2: null,
+      rho_calc_2: null,
+      // Résultats finaux
+      rho_mean: null,
+      rho_std: null,
+      // Progression
+      currentStep: 0,
+      showPrevSteps: false,
+      // Exercices
+      activeExo: "calc",
+      exoCalc: null,
+      exoError: null,
+      exoReorder: null
+    };
+
+    // --- Sauvegarde & Restauration localStorage ---
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        if (s) {
+          const parsed = JSON.parse(s);
+          state = Object.assign(state, parsed);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    // --- Génération d'un nouvel échantillon ---
+    function initNewSample(preserveType) {
+      if (!preserveType) state.adhType = "pc";
+      const temps = [19, 20, 21, 22, 23, 24];
+      state.T = temps[Math.floor(Math.random() * temps.length)];
+      state.V_true = roundDec(randUniform(99.85, 100.15), 3);
+      state.m0_true = roundDec(randUniform(140.0, 190.0), 3);
+      state.rho_true = roundDec(randUniform(0.85, 1.10), 4);
+
+      // Réinitialiser les mesures
+      state.m0_1 = null;
+      state.m1_1 = null;
+      state.rho_eau_choice = null;
+      state.V_calc_1 = null;
+      state.m2_1 = null;
+      state.rho_calc_1 = null;
+
+      state.m0_2 = null;
+      state.m1_2 = null;
+      state.V_calc_2 = null;
+      state.m2_2 = null;
+      state.rho_calc_2 = null;
+
+      state.rho_mean = null;
+      state.rho_std = null;
+
+      state.currentStep = 0;
+      saveState();
+    }
+
+    function weighVal(val, sigma = 0.0007) {
+      return roundDec(val + randGauss(sigma), 3);
+    }
+
+    // --- Mise à jour du Banc d'essai SVG ---
+    function updateBenchVisuals(animating) {
+      // Thermomètre
+      const t = state.T;
+      const thermoCol = document.getElementById("thermo-col");
+      const thermoVal = document.getElementById("thermo-val");
+      if (thermoCol && thermoVal) {
+        // T entre 15 et 25. 15 -> y=95 h=35. 25 -> y=35 h=95
+        const h = 35 + ((t - 15) / 10) * 60;
+        const y = 130 - h;
+        thermoCol.setAttribute("y", y);
+        thermoCol.setAttribute("height", h);
+        thermoVal.textContent = t + " °C";
+      }
+
+      // Pycnomètre intérieur & bouchon
+      const liquid = document.getElementById("pycno-liquid");
+      const stopper = document.getElementById("pycno-stopper");
+      const balanceTxt = document.getElementById("balance-txt");
+
+      if (liquid && !animating) {
+        if (state.currentStep < 2) {
+          // Vide
+          liquid.setAttribute("height", 0);
+        } else if (state.currentStep >= 2 && state.currentStep < 6) {
+          // Eau distillée
+          liquid.setAttribute("fill", "#93c5fd");
+          liquid.setAttribute("y", 36);
+          liquid.setAttribute("height", 38);
+        } else if (state.currentStep >= 6) {
+          // Adhésif ambre
+          liquid.setAttribute("fill", "#f59e0b");
+          liquid.setAttribute("y", 36);
+          liquid.setAttribute("height", 38);
+        }
+      }
+
+      // Afficheur balance
+      if (balanceTxt && !animating) {
+        if (state.currentStep === 1 || state.currentStep === 2) {
+          balanceTxt.textContent = fmtFr(state.m0_1, 3) + " g";
+        } else if (state.currentStep === 3 || state.currentStep === 4 || state.currentStep === 5 || state.currentStep === 6) {
+          balanceTxt.textContent = fmtFr(state.m1_1, 3) + " g";
+        } else if (state.currentStep >= 7 && state.currentStep < 9) {
+          balanceTxt.textContent = fmtFr(state.m2_1, 3) + " g";
+        } else if (state.currentStep >= 9) {
+          balanceTxt.textContent = fmtFr(state.m2_2 || state.m2_1, 3) + " g";
+        } else {
+          balanceTxt.textContent = "---.--- g";
+        }
+      }
+    }
+
+    // --- Mise à jour du Cahier de mesures ---
+    function updateNotebook() {
+      document.getElementById("cell-m0-1").textContent = fmtFr(state.m0_1, 3);
+      document.getElementById("cell-m1-1").textContent = fmtFr(state.m1_1, 3);
+      document.getElementById("cell-V-1").textContent = fmtFr(state.V_calc_1, 2);
+      document.getElementById("cell-m2-1").textContent = fmtFr(state.m2_1, 3);
+      document.getElementById("cell-rho-1").textContent = fmtFr(state.rho_calc_1, 4);
+
+      const r2 = document.getElementById("row-mesure-2");
+      if (state.currentStep >= 9) {
+        r2.style.display = "";
+        document.getElementById("cell-m0-2").textContent = fmtFr(state.m0_2, 3);
+        document.getElementById("cell-m1-2").textContent = fmtFr(state.m1_2, 3);
+        document.getElementById("cell-V-2").textContent = fmtFr(state.V_calc_2, 2);
+        document.getElementById("cell-m2-2").textContent = fmtFr(state.m2_2, 3);
+        document.getElementById("cell-rho-2").textContent = fmtFr(state.rho_calc_2, 4);
+      } else {
+        r2.style.display = "none";
+      }
+
+      // Formules dynamiques
+      const dyn = document.getElementById("dynamic-formulas");
+      let html = "";
+      if (state.currentStep >= 5 && state.V_calc_1 !== null) {
+        html += `<div><strong>Volume pycnomètre :</strong> V = (${fmtFr(state.m1_1, 3)} − ${fmtFr(state.m0_1, 3)}) / ${fmtFr(state.rho_eau_choice, 4)} = <strong>${fmtFr(state.V_calc_1, 2)} mL</strong></div>`;
+      }
+      if (state.currentStep >= 8 && state.rho_calc_1 !== null) {
+        html += `<div style="margin-top:4px;"><strong>Masse volumique :</strong> ρ₁ = (${fmtFr(state.m2_1, 3)} − ${fmtFr(state.m0_1, 3)}) / ${fmtFr(state.V_calc_1, 2)} = <strong>${fmtFr(state.rho_calc_1, 4)} g/mL</strong></div>`;
+      }
+      if (state.currentStep >= 10 && state.rho_mean !== null) {
+        html += `<div style="margin-top:4px; color:var(--vert);"><strong>Moyenne & écart type :</strong> ρ̄ = <strong>${fmtFr(state.rho_mean, 4)} g/mL</strong>, s = <strong>${fmtFr(state.rho_std, 4)} g/mL</strong></div>`;
+      }
+      if (html) {
+        dyn.innerHTML = html;
+        dyn.style.display = "block";
+      } else {
+        dyn.style.display = "none";
+      }
+    }
+
+    // --- Les 12 Étapes du protocole (0 à 11) ---
+    const STEPS_DEF = [
+      {
+        id: 0,
+        titre: "Nettoyer et sécher",
+        consigne: "Nettoyer puis sécher le pycnomètre avant toute pesée.",
+        actionBtn: "🧽 Nettoyer et sécher",
+        summary: () => "Pycnomètre propre et sec."
+      },
+      {
+        id: 1,
+        titre: "Peser vide : m₀",
+        consigne: "Peser le pycnomètre vide à 1 mg près : m₀.",
+        actionBtn: "⚖️ Peser m₀",
+        summary: () => `m₀ = ${fmtFr(state.m0_1, 3)} g`
+      },
+      {
+        id: 2,
+        titre: "Remplir d'eau distillée",
+        consigne: "Remplir le pycnomètre d'eau distillée à température ambiante.",
+        actionBtn: "💧 Remplir d'eau distillée",
+        summary: () => `Rempli d'eau distillée à température ambiante (${state.T} °C).`
+      },
+      {
+        id: 3,
+        titre: "Peser plein d'eau : m₁",
+        consigne: "Peser le pycnomètre rempli d'eau : m₁.",
+        actionBtn: "⚖️ Peser m₁",
+        summary: () => `m₁ = ${fmtFr(state.m1_1, 3)} g`
+      },
+      {
+        id: 4,
+        titre: "Lire ρeau à la température de la salle",
+        consigne: `La salle est à ${state.T} °C : clique sur la bonne ligne du tableau ci-dessous.`,
+        isTable: true,
+        summary: () => `ρeau(${state.T} °C) = ${fmtFr(state.rho_eau_choice, 4)} g/mL`
+      },
+      {
+        id: 5,
+        titre: "Calculer le volume V",
+        consigne: "En déduire le volume exact du pycnomètre : V = (m₁ − m₀) / ρeau.",
+        actionBtn: "🧮 Montrer le calcul de V",
+        isCalc: "V",
+        summary: () => `V = ${fmtFr(state.V_calc_1, 2)} mL`
+      },
+      {
+        id: 6,
+        titre: "Sécher et remplir d'adhésif",
+        consigne: "Sécher le pycnomètre et le remplir avec l'adhésif liquide (à température ambiante).",
+        actionBtn: "🫗 Sécher et remplir d'adhésif",
+        summary: () => "Pycnomètre séché, rempli d'adhésif à température ambiante."
+      },
+      {
+        id: 7,
+        titre: "Peser plein d'adhésif : m₂",
+        consigne: "Peser le pycnomètre rempli d'adhésif : m₂.",
+        actionBtn: "⚖️ Peser m₂",
+        summary: () => `m₂ = ${fmtFr(state.m2_1, 3)} g`
+      },
+      {
+        id: 8,
+        titre: "Calculer ρ",
+        consigne: "Calculer la masse volumique de l'adhésif : ρ = (m₂ − m₀) / V.",
+        actionBtn: "🧮 Montrer le calcul de ρ₁",
+        isCalc: "rho1",
+        summary: () => `ρ₁ = ${fmtFr(state.rho_calc_1, 4)} g/mL`
+      },
+      {
+        id: 9,
+        titre: "Seconde mesure",
+        consigne: "La fiche demande deux mesures : refaire la mesure complète.",
+        actionBtn: "🔁 Réaliser la 2ᵉ mesure",
+        summary: () => `ρ₂ = ${fmtFr(state.rho_calc_2, 4)} g/mL`
+      },
+      {
+        id: 10,
+        titre: "Moyenne et écart type",
+        consigne: "Calculer la moyenne des deux mesures et l'écart type expérimental (n − 1).",
+        actionBtn: "🧮 Montrer le calcul (ρ̄ et s)",
+        isCalc: "stats",
+        summary: () => `ρ̄ = ${fmtFr(state.rho_mean, 4)} g/mL, s = ${fmtFr(state.rho_std, 4)} g/mL`
+      },
+      {
+        id: 11,
+        titre: "Résultat final",
+        consigne: "Résultat rendu avec son écart type expérimental.",
+        isFinal: true,
+        summary: () => `ρ = ${fmtFr(state.rho_mean, 4)} ± ${fmtFr(state.rho_std, 4)} g/mL`
+      }
+    ];
+
+    function renderSteps() {
+      const container = document.getElementById("steps-container");
+      document.getElementById("step-counter").textContent = `${Math.min(state.currentStep, 12)} / 12`;
+      const prevBtn = document.getElementById("btn-toggle-prev");
+      const prevCount = document.getElementById("prev-count");
+
+      if (state.currentStep > 0) {
+        prevBtn.style.display = "";
+        prevCount.textContent = state.currentStep;
+      } else {
+        prevBtn.style.display = "none";
+      }
+
+      let html = "";
+      STEPS_DEF.forEach((s) => {
+        const isCurrent = s.id === state.currentStep;
+        const isDone = s.id < state.currentStep;
+        const isLocked = s.id > state.currentStep;
+
+        if (isDone && !state.showPrevSteps) {
+          // Afficher seulement un résumé discret
+          html += `
+            <div class="step-item done" data-step="${s.id}">
+              <div class="step-head">
+                <span>✅ Étape ${s.id} — ${s.titre}</span>
+                <span class="step-summary">${s.summary()}</span>
+              </div>
+            </div>`;
+          return;
+        }
+
+        let bodyHtml = "";
+        if (isDone) {
+          bodyHtml = `<div class="step-summary">✅ ${s.summary()}</div>`;
+          if (s.isCalc) {
+            bodyHtml += `<div style="margin-top:6px;"><button class="btn btn-secondary btn-review-calc" data-calc="${s.isCalc}" style="font-size:12px; padding:2px 8px;">Revoir le calcul</button></div>`;
+          }
+        } else if (isCurrent) {
+          bodyHtml += `<div class="step-instruction">${s.consigne}</div>`;
+
+          if (s.isTable) {
+            // Table de l'eau cliquable pour l'étape 4
+            bodyHtml += `
+              <table class="table-water" id="sim-water-table">
+                <thead><tr><th>Température (°C)</th><th>ρeau (g·mL⁻¹)</th></tr></thead>
+                <tbody>
+                  ${[19,20,21,22,23,24].map(temp => `
+                    <tr class="clickable" data-temp="${temp}">
+                      <td>${temp} °C</td>
+                      <td>${fmtFr(RHO_EAU_TABLE[temp], 4)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+              <div style="font-size:11px; color:var(--discret);">Tableau de la fiche Cf13.</div>
+              <div id="step-water-msg"></div>
+            `;
+          } else if (s.isCalc) {
+            bodyHtml += `<button class="btn btn-primary btn-action-calc" data-calc="${s.isCalc}">${s.actionBtn}</button>`;
+          } else if (s.isFinal) {
+            bodyHtml += `
+              <div class="calc-result-box" style="margin:6px 0;">
+                ✅ ρ = ${fmtFr(state.rho_mean, 4)} ± ${fmtFr(state.rho_std, 4)} g/mL
+                <div style="font-size:12px; font-weight:normal; margin-top:2px;">(soit la même valeur en kg/L)</div>
+              </div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button class="btn btn-secondary btn-review-calc" data-calc="stats">Revoir le calcul</button>
+                <button id="btn-print-report" class="btn btn-primary">📄 Exporter le compte rendu</button>
+              </div>
+            `;
+          } else {
+            bodyHtml += `<button class="btn btn-primary btn-action-step" data-step="${s.id}">${s.actionBtn}</button>`;
+          }
+        } else {
+          // Locked
+          bodyHtml = `<div class="step-instruction" style="color:var(--discret);">Étape verrouillée.</div>`;
+        }
+
+        html += `
+          <div class="step-item ${isCurrent ? "current" : isDone ? "done" : "locked"}" data-step="${s.id}">
+            <div class="step-head">
+              <span>Étape ${s.id} — ${s.titre}</span>
+              ${isDone ? "<span>✅</span>" : isCurrent ? "<span>▶</span>" : "<span>🔒</span>"}
+            </div>
+            ${(!isLocked || state.showPrevSteps) ? `<div class="step-body">${bodyHtml}</div>` : ""}
+          </div>`;
+      });
+
+      container.innerHTML = html;
+      attachStepEvents();
+    }
+
+    // --- Animations simples & respect de prefers-reduced-motion ---
+    function prefersReducedMotion() {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    function runAnimation(type, onComplete) {
+      if (prefersReducedMotion()) {
+        onComplete();
+        return;
+      }
+
+      const liquid = document.getElementById("pycno-liquid");
+      const stopper = document.getElementById("pycno-stopper");
+      const sparkles = document.getElementById("sparkles");
+      const stream = document.getElementById("liquid-stream");
+      const beaker = document.getElementById("beaker");
+
+      if (type === "clean") {
+        if (sparkles) {
+          sparkles.style.transition = "opacity 0.3s";
+          sparkles.style.opacity = "1";
+          setTimeout(() => {
+            sparkles.style.opacity = "0";
+            onComplete();
+          }, 800);
+        } else onComplete();
+      } else if (type === "water") {
+        if (stopper && stream && beaker && liquid) {
+          stopper.style.transition = "transform 0.3s";
+          stopper.style.transform = "translateY(-14px)";
+          beaker.style.transition = "opacity 0.2s";
+          beaker.style.opacity = "1";
+          stream.setAttribute("stroke", "#93c5fd");
+          stream.style.opacity = "1";
+
+          let h = 0;
+          const interval = setInterval(() => {
+            h += 4;
+            liquid.setAttribute("fill", "#93c5fd");
+            liquid.setAttribute("y", 74 - h);
+            liquid.setAttribute("height", h);
+            if (h >= 38) {
+              clearInterval(interval);
+              stream.style.opacity = "0";
+              beaker.style.opacity = "0";
+              stopper.style.transform = "translateY(0)";
+              setTimeout(onComplete, 200);
+            }
+          }, 40);
+        } else onComplete();
+      } else if (type === "adhesive") {
+        if (stopper && stream && beaker && liquid) {
+          stopper.style.transition = "transform 0.3s";
+          stopper.style.transform = "translateY(-14px)";
+          beaker.style.transition = "opacity 0.2s";
+          beaker.style.opacity = "1";
+          stream.setAttribute("stroke", "#f59e0b");
+          stream.style.opacity = "1";
+
+          let h = 0;
+          const interval = setInterval(() => {
+            h += 4;
+            liquid.setAttribute("fill", "#f59e0b");
+            liquid.setAttribute("y", 74 - h);
+            liquid.setAttribute("height", h);
+            if (h >= 38) {
+              clearInterval(interval);
+              stream.style.opacity = "0";
+              beaker.style.opacity = "0";
+              stopper.style.transform = "translateY(0)";
+              setTimeout(onComplete, 200);
+            }
+          }, 40);
+        } else onComplete();
+      } else if (type === "weigh") {
+        const pycno = document.getElementById("pycno-group");
+        if (pycno) {
+          pycno.style.transition = "transform 0.15s ease-out";
+          pycno.style.transform = "translate(75px, 48px)";
+          setTimeout(() => {
+            pycno.style.transform = "translate(75px, 45px)";
+            onComplete();
+          }, 200);
+        } else onComplete();
+      } else {
+        onComplete();
+      }
+    }
+
+    // --- Gestion des clics dans les étapes ---
+    function attachStepEvents() {
+      // Boutons standards d'action
+      document.querySelectorAll(".btn-action-step").forEach(btn => {
+        btn.onclick = () => {
+          const stepId = parseInt(btn.dataset.step, 10);
+          handleStepAction(stepId, btn);
+        };
+      });
+
+      // Boutons modale calcul
+      document.querySelectorAll(".btn-action-calc, .btn-review-calc").forEach(btn => {
+        btn.onclick = () => {
+          openCalcModal(btn.dataset.calc);
+        };
+      });
+
+      // Clic sur table de l'eau (Étape 4)
+      const tableWater = document.getElementById("sim-water-table");
+      if (tableWater) {
+        tableWater.querySelectorAll("tr.clickable").forEach(row => {
+          row.onclick = () => {
+            const chosenTemp = parseInt(row.dataset.temp, 10);
+            const msgBox = document.getElementById("step-water-msg");
+            if (chosenTemp === state.T) {
+              row.classList.add("selected-good");
+              state.rho_eau_choice = RHO_EAU_TABLE[chosenTemp];
+              msgBox.className = "msg-feedback msg-success";
+              msgBox.textContent = `Correct ! À ${state.T} °C, ρeau = ${fmtFr(state.rho_eau_choice, 4)} g/mL.`;
+              setTimeout(() => {
+                state.currentStep = 5;
+                saveState();
+                renderSteps();
+                updateNotebook();
+              }, 600);
+            } else {
+              tableWater.classList.add("shake");
+              msgBox.className = "msg-feedback msg-error";
+              msgBox.textContent = `Ce n'est pas la bonne ligne : la salle est à ${state.T} °C.`;
+              setTimeout(() => tableWater.classList.remove("shake"), 450);
+            }
+          };
+        });
+      }
+
+      // Bouton export compte rendu (Étape 11)
+      const btnPrint = document.getElementById("btn-print-report");
+      if (btnPrint) {
+        btnPrint.onclick = () => window.print();
+      }
+    }
+
+    function handleStepAction(stepId, btn) {
+      btn.disabled = true;
+
+      if (stepId === 0) {
+        // Nettoyer et sécher
+        runAnimation("clean", () => {
+          state.currentStep = 1;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+        });
+      } else if (stepId === 1) {
+        // Peser vide m0_1
+        state.m0_1 = weighVal(state.m0_true);
+        runAnimation("weigh", () => {
+          state.currentStep = 2;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+          updateNotebook();
+        });
+      } else if (stepId === 2) {
+        // Remplir d'eau
+        runAnimation("water", () => {
+          state.currentStep = 3;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+        });
+      } else if (stepId === 3) {
+        // Peser m1_1
+        const rho_eau = RHO_EAU_TABLE[state.T];
+        state.m1_1 = weighVal(state.m0_true + state.V_true * rho_eau);
+        runAnimation("weigh", () => {
+          state.currentStep = 4;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+          updateNotebook();
+        });
+      } else if (stepId === 6) {
+        // Sécher et remplir d'adhésif
+        runAnimation("adhesive", () => {
+          state.currentStep = 7;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+        });
+      } else if (stepId === 7) {
+        // Peser m2_1
+        state.m2_1 = weighVal(state.m0_true + state.V_true * (state.rho_true + randGauss(0.0010)));
+        runAnimation("weigh", () => {
+          state.currentStep = 8;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+          updateNotebook();
+        });
+      } else if (stepId === 9) {
+        // Seconde mesure complète sur le même échantillon
+        const rho_eau = RHO_EAU_TABLE[state.T];
+        state.m0_2 = weighVal(state.m0_true);
+        state.m1_2 = weighVal(state.m0_true + state.V_true * rho_eau);
+        state.V_calc_2 = roundDec((state.m1_2 - state.m0_2) / rho_eau, 2);
+        state.m2_2 = weighVal(state.m0_true + state.V_true * (state.rho_true + randGauss(0.0010)));
+        state.rho_calc_2 = roundDec((state.m2_2 - state.m0_2) / state.V_calc_2, 4);
+
+        runAnimation("weigh", () => {
+          state.currentStep = 10;
+          saveState();
+          renderSteps();
+          updateBenchVisuals();
+          updateNotebook();
+        });
+      }
+    }
+
+    // --- Modale « Montrer le calcul » ---
+    const modal = document.getElementById("calc-modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalBody = document.getElementById("modal-body");
+    const btnModalClose = document.getElementById("btn-close-modal");
+    const btnModalCloseAction = document.getElementById("btn-modal-close-action");
+    const btnModalNext = document.getElementById("btn-modal-next-action");
+    let currentModalType = null;
+
+    function openCalcModal(type) {
+      currentModalType = type;
+      modal.classList.add("open");
+
+      if (type === "V") {
+        modalTitle.textContent = "Calcul du volume exact du pycnomètre (V)";
+        const m1 = state.m1_1;
+        const m0 = state.m0_1;
+        const rhoEau = state.rho_eau_choice || RHO_EAU_TABLE[state.T];
+        const diff = roundDec(m1 - m0, 3);
+        const V = roundDec(diff / rhoEau, 2);
+        state.V_calc_1 = V;
+
+        modalBody.innerHTML = `
+          <p>Tableau de la fiche Cf13, ligne <strong>${state.T} °C</strong> :<br>
+          ρeau = <strong>${fmtFr(rhoEau, 4)} g/mL</strong>.</p>
+          <div class="calc-box">
+            <div>Formule : <code>V = (m₁ − m₀) / ρeau</code></div>
+            <div style="margin-top:6px;">Application numérique :</div>
+            <div>V = (${fmtFr(m1, 3)} − ${fmtFr(m0, 3)}) / ${fmtFr(rhoEau, 4)}</div>
+            <div>V = ${fmtFr(diff, 3)} / ${fmtFr(rhoEau, 4)}</div>
+          </div>
+          <div class="calc-result-box">
+            V = ${fmtFr(V, 2)} mL
+          </div>
+        `;
+        btnModalNext.style.display = (state.currentStep === 5) ? "" : "none";
+      } else if (type === "rho1") {
+        modalTitle.textContent = "Calcul de la masse volumique de l'adhésif (ρ₁)";
+        const m2 = state.m2_1;
+        const m0 = state.m0_1;
+        const V = state.V_calc_1;
+        const diff = roundDec(m2 - m0, 3);
+        const rho = roundDec(diff / V, 4);
+        state.rho_calc_1 = rho;
+
+        modalBody.innerHTML = `
+          <div class="calc-box">
+            <div>Formule : <code>ρ₁ = (m₂ − m₀) / V</code></div>
+            <div style="margin-top:6px;">Application numérique :</div>
+            <div>ρ₁ = (${fmtFr(m2, 3)} − ${fmtFr(m0, 3)}) / ${fmtFr(V, 2)}</div>
+            <div>ρ₁ = ${fmtFr(diff, 3)} / ${fmtFr(V, 2)}</div>
+          </div>
+          <div class="calc-result-box">
+            ρ₁ = ${fmtFr(rho, 4)} g/mL
+          </div>
+        `;
+        btnModalNext.style.display = (state.currentStep === 8) ? "" : "none";
+      } else if (type === "stats") {
+        modalTitle.textContent = "Moyenne et écart type expérimental (n = 2)";
+        const rho1 = state.rho_calc_1;
+        const rho2 = state.rho_calc_2;
+        const mean = roundDec((rho1 + rho2) / 2, 4);
+        const diff = Math.abs(rho1 - rho2);
+        const s = roundDec(diff / Math.SQRT2, 4);
+        state.rho_mean = mean;
+        state.rho_std = s;
+
+        modalBody.innerHTML = `
+          <p>Mesures obtenues :<br>
+          • Mesure 1 : ρ₁ = <strong>${fmtFr(rho1, 4)} g/mL</strong><br>
+          • Mesure 2 : ρ₂ = <strong>${fmtFr(rho2, 4)} g/mL</strong></p>
+
+          <div class="calc-box">
+            <div><strong>1. Moyenne arithmétique :</strong></div>
+            <div>ρ̄ = (ρ₁ + ρ₂) / 2 = (${fmtFr(rho1, 4)} + ${fmtFr(rho2, 4)}) / 2 = <strong>${fmtFr(mean, 4)} g/mL</strong></div>
+          </div>
+
+          <div class="calc-box">
+            <div><strong>2. Écart type expérimental (convention n − 1) :</strong></div>
+            <div style="font-size:12px; color:var(--discret);">Pour n = 2 : s = |ρ₁ − ρ₂| / √2</div>
+            <div style="margin-top:4px;">s = |${fmtFr(rho1, 4)} − ${fmtFr(rho2, 4)}| / √2 = ${fmtFr(diff, 4)} / 1,4142 = <strong>${fmtFr(s, 4)} g/mL</strong></div>
+          </div>
+
+          <div class="calc-result-box">
+            ✅ ρ = ${fmtFr(mean, 4)} ± ${fmtFr(s, 4)} g/mL
+            <div style="font-size:12px; font-weight:normal; margin-top:2px;">(la même valeur en kg/L)</div>
+          </div>
+        `;
+        btnModalNext.style.display = (state.currentStep === 10) ? "" : "none";
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove("open");
+    }
+
+    btnModalClose.onclick = closeModal;
+    btnModalCloseAction.onclick = closeModal;
+    btnModalNext.onclick = () => {
+      closeModal();
+      if (state.currentStep === 5) {
+        state.currentStep = 6;
+      } else if (state.currentStep === 8) {
+        state.currentStep = 9;
+      } else if (state.currentStep === 10) {
+        state.currentStep = 11;
+      }
+      saveState();
+      renderSteps();
+      updateNotebook();
+      updateBenchVisuals();
+    };
+
+    // --- Bascule étapes précédentes ---
+    document.getElementById("btn-toggle-prev").onclick = () => {
+      state.showPrevSteps = !state.showPrevSteps;
+      document.getElementById("btn-toggle-prev").textContent = state.showPrevSteps
+        ? "Masquer les étapes précédentes"
+        : `👁️ Voir les étapes précédentes (${state.currentStep})`;
+      renderSteps();
+    };
+
+    // Recommencer / Nouvelle simulation
+    document.getElementById("btn-new-sim").onclick = () => {
+      if (confirm("Lancer une nouvelle simulation avec un nouvel échantillon ?")) {
+        initNewSample(true);
+        renderSteps();
+        updateNotebook();
+        updateBenchVisuals();
+      }
+    };
+    document.getElementById("btn-reset-sim").onclick = () => {
+      if (confirm("Lancer une nouvelle simulation avec un nouvel échantillon ?")) {
+        initNewSample(true);
+        renderSteps();
+        updateNotebook();
+        updateBenchVisuals();
+      }
+    };
+
+    // Sélecteur d'adhésif
+    const selectAdh = document.getElementById("select-adh-type");
+    selectAdh.value = state.adhType;
+    selectAdh.onchange = () => {
+      state.adhType = selectAdh.value;
+      initNewSample(true);
+      renderSteps();
+      updateNotebook();
+      updateBenchVisuals();
+    };
+
+    // ==============================================================
+    // ONGLET 2 : EXERCICES
+    // ==============================================================
+    function generateExoCalc() {
+      const temps = [19, 20, 21, 22, 23, 24];
+      const T = temps[Math.floor(Math.random() * temps.length)];
+      const rho_eau = RHO_EAU_TABLE[T];
+      const V_exact = roundDec(randUniform(99.85, 100.15), 3);
+      const m0 = roundDec(randUniform(140.0, 185.0), 3);
+      const m1 = roundDec(m0 + V_exact * rho_eau + randGauss(0.0007), 3);
+
+      const rho_vrai = roundDec(randUniform(0.86, 1.08), 4);
+      const m2_1 = roundDec(m0 + V_exact * (rho_vrai + randGauss(0.0010)), 3);
+      const m2_2 = roundDec(m0 + V_exact * (rho_vrai + randGauss(0.0010)), 3);
+
+      const V_calc = roundDec((m1 - m0) / rho_eau, 2);
+      const rho1_calc = roundDec((m2_1 - m0) / V_calc, 4);
+      const rho2_calc = roundDec((m2_2 - m0) / V_calc, 4);
+      const mean_calc = roundDec((rho1_calc + rho2_calc) / 2, 4);
+      const s_calc = roundDec(Math.abs(rho1_calc - rho2_calc) / Math.SQRT2, 4);
+
+      state.exoCalc = {
+        T, rho_eau, m0, m1, m2_1, m2_2,
+        V_calc, rho1_calc, rho2_calc, mean_calc, s_calc,
+        step: 0
+      };
+      saveState();
+      renderExoCalc();
+    }
+
+    function renderExoCalc() {
+      const ex = state.exoCalc;
+      if (!ex) return;
+      document.getElementById("exo-calc-statement").innerHTML = `
+        Masse volumique d'un adhésif liquide au pycnomètre Hubbard.<br>
+        La salle (et l'eau distillée) est à <strong>${ex.T} °C</strong>.<br>
+        Pesées au milligramme :<br>
+        • Pycnomètre vide : <strong>m₀ = ${fmtFr(ex.m0, 3)} g</strong><br>
+        • Pycnomètre rempli d'eau : <strong>m₁ = ${fmtFr(ex.m1, 3)} g</strong><br>
+        • Pycnomètre rempli d'adhésif (mesure 1) : <strong>m₂ = ${fmtFr(ex.m2_1, 3)} g</strong><br>
+        • Pycnomètre rempli d'adhésif (mesure 2) : <strong>m₂ = ${fmtFr(ex.m2_2, 3)} g</strong>
+      `;
+
+      // Vider les champs
+      ["rhoeau", "V", "rho1", "rho2", "rhobar", "s"].forEach(id => {
+        const inp = document.getElementById("inp-exo-" + id);
+        if (inp) {
+          inp.value = "";
+          inp.className = "";
+        }
+      });
+      document.getElementById("exo-calc-feedback").innerHTML = "";
+      document.getElementById("exo-calc-solution").style.display = "none";
+    }
+
+    document.getElementById("btn-verify-calc").onclick = () => {
+      const ex = state.exoCalc;
+      if (!ex) return;
+
+      const user_rhoeau = parseFr(document.getElementById("inp-exo-rhoeau").value);
+      const user_V = parseFr(document.getElementById("inp-exo-V").value);
+      const user_rho1 = parseFr(document.getElementById("inp-exo-rho1").value);
+      const user_rho2 = parseFr(document.getElementById("inp-exo-rho2").value);
+      const user_rhobar = parseFr(document.getElementById("inp-exo-rhobar").value);
+      const user_s = parseFr(document.getElementById("inp-exo-s").value);
+
+      const checks = [
+        { id: "rhoeau", ok: Math.abs(user_rhoeau - ex.rho_eau) <= 0.00005 },
+        { id: "V", ok: Math.abs(user_V - ex.V_calc) <= 0.015 },
+        { id: "rho1", ok: Math.abs(user_rho1 - ex.rho1_calc) <= 0.0006 },
+        { id: "rho2", ok: Math.abs(user_rho2 - ex.rho2_calc) <= 0.0006 },
+        { id: "rhobar", ok: Math.abs(user_rhobar - ex.mean_calc) <= 0.0006 },
+        { id: "s", ok: Math.abs(user_s - ex.s_calc) <= Math.max(0.00008, 0.12 * ex.s_calc) }
+      ];
+
+      let goodCount = 0;
+      checks.forEach(c => {
+        const el = document.getElementById("inp-exo-" + c.id);
+        if (c.ok) {
+          el.className = "input-good";
+          goodCount++;
+        } else {
+          el.className = "input-bad";
+        }
+      });
+
+      const fb = document.getElementById("exo-calc-feedback");
+      if (goodCount === 6) {
+        fb.className = "msg-feedback msg-success";
+        fb.textContent = "🎉 Tout est juste, bravo !";
+      } else {
+        fb.className = "msg-feedback msg-error";
+        fb.textContent = `${goodCount} / 6 réponses justes — corrige les cases en rouge ou affiche la correction.`;
+      }
+    };
+
+    function showCalcCorrection(stepCount) {
+      const ex = state.exoCalc;
+      if (!ex) return;
+      const sol = document.getElementById("exo-calc-solution");
+      sol.style.display = "block";
+
+      const stepsText = [
+        `1. Tableau ligne ${ex.T} °C : ρeau = <strong>${fmtFr(ex.rho_eau, 4)} g/mL</strong>.`,
+        `2. Volume : V = (${fmtFr(ex.m1, 3)} − ${fmtFr(ex.m0, 3)}) / ${fmtFr(ex.rho_eau, 4)} = <strong>${fmtFr(ex.V_calc, 2)} mL</strong>.`,
+        `3. Mesure 1 : ρ₁ = (${fmtFr(ex.m2_1, 3)} − ${fmtFr(ex.m0, 3)}) / ${fmtFr(ex.V_calc, 2)} = <strong>${fmtFr(ex.rho1_calc, 4)} g/mL</strong>.`,
+        `4. Mesure 2 : ρ₂ = (${fmtFr(ex.m2_2, 3)} − ${fmtFr(ex.m0, 3)}) / ${fmtFr(ex.V_calc, 2)} = <strong>${fmtFr(ex.rho2_calc, 4)} g/mL</strong>.`,
+        `5. Moyenne : ρ̄ = (${fmtFr(ex.rho1_calc, 4)} + ${fmtFr(ex.rho2_calc, 4)}) / 2 = <strong>${fmtFr(ex.mean_calc, 4)} g/mL</strong>.`,
+        `6. Écart type : s = |${fmtFr(ex.rho1_calc, 4)} − ${fmtFr(ex.rho2_calc, 4)}| / √2 = <strong>${fmtFr(ex.s_calc, 4)} g/mL</strong>.`,
+        `7. On rend la moyenne avec son écart type : <strong>ρ = ${fmtFr(ex.mean_calc, 4)} ± ${fmtFr(ex.s_calc, 4)} g/mL</strong> — soit la même valeur en kg/L, dans la plage 0,85–1,1 kg/L des colles pour emballages.`
+      ];
+
+      sol.innerHTML = stepsText.slice(0, stepCount).map(t => `<div style="margin-bottom:6px;">${t}</div>`).join("");
+    }
+
+    document.getElementById("btn-corr-calc-step").onclick = () => {
+      if (!state.exoCalc) return;
+      state.exoCalc.step = Math.min((state.exoCalc.step || 0) + 1, 7);
+      showCalcCorrection(state.exoCalc.step);
+    };
+    document.getElementById("btn-corr-calc-all").onclick = () => {
+      if (!state.exoCalc) return;
+      state.exoCalc.step = 7;
+      showCalcCorrection(7);
+    };
+
+    // --- Exercice 2 : Trouver l'erreur ---
+    const ERROR_SCENARIOS = [
+      {
+        id: "balance",
+        replaceIndex: 1,
+        wrongText: "Je le pèse vide sur la balance au décigramme : m₀ = 162,4 g (une seule décimale).",
+        explanation: "Les pesées doivent se faire à 1 mg près (3 décimales). Au décigramme, l'incertitude sur les masses ruine la précision sur la masse volumique."
+      },
+      {
+        id: "water",
+        replaceIndex: 2,
+        wrongText: "Je le remplis d'eau distillée sortie du réfrigérateur et je le pèse aussitôt : m₁ (la salle est à T °C).",
+        explanation: "L'eau doit impérativement être à température ambiante : c'est la température de la salle qui sert à lire ρeau dans le tableau."
+      },
+      {
+        id: "line",
+        replaceIndex: 3,
+        wrongText: "La salle est à T °C ; je prends ρeau = 0,9991 g/mL (valeur à 15 °C) et j'en déduis V.",
+        explanation: "Mauvaise ligne du tableau : il faut lire la valeur correspondant exactement à la température mesurée de la salle."
+      },
+      {
+        id: "dry",
+        replaceIndex: 4,
+        wrongText: "Je vide l'eau et je verse aussitôt l'adhésif, sans sécher le pycnomètre, puis je pèse : m₂.",
+        explanation: "Il faut impérativement sécher le pycnomètre avant d'y mettre l'adhésif : l'eau restante fausse m₂ et dilue l'échantillon."
+      },
+      {
+        id: "formula",
+        replaceIndex: 5,
+        wrongText: "Je calcule ρ = (m₂ − m₀) / (m₁ − m₀), je refais une seconde mesure…",
+        explanation: "(m₂ − m₀)/(m₁ − m₀) donne une densité par rapport à l'eau, et non pas une masse volumique : il faut diviser par le volume V = (m₁ − m₀)/ρeau."
+      },
+      {
+        id: "single",
+        replaceIndex: 5,
+        wrongText: "Je calcule ρ = (m₂ − m₀) / V et je rends directement ρ = 0,9412 g/mL sans autre mesure.",
+        explanation: "La fiche Cf13 impose expressément d'effectuer deux mesures complètes et de rendre la moyenne avec un écart type expérimental."
+      }
+    ];
+
+    function generateExoError() {
+      const temps = [19, 20, 21, 22, 23, 24];
+      const T = temps[Math.floor(Math.random() * temps.length)];
+      const scenario = ERROR_SCENARIOS[Math.floor(Math.random() * ERROR_SCENARIOS.length)];
+
+      const baseSentences = [
+        "Je nettoie puis je sèche le pycnomètre.",
+        "Je le pèse vide sur la balance au milligramme : m₀ = 158,214 g.",
+        `Je le remplis d'eau distillée à température ambiante (${T} °C) et je le pèse : m₁.`,
+        `Je lis dans le tableau la masse volumique de l'eau à la température de la salle (${T} °C) : ${fmtFr(RHO_EAU_TABLE[T], 4)} g/mL, et j'en déduis V = (m₁ − m₀) / ρeau.`,
+        "Je sèche le pycnomètre, je le remplis d'adhésif à température ambiante et je le pèse : m₂.",
+        "Je calcule ρ = (m₂ − m₀) / V, je refais une seconde mesure et je rends la moyenne avec un écart type."
+      ];
+
+      // Remplacement de la phrase fausse
+      baseSentences[scenario.replaceIndex] = scenario.wrongText.replace("T °C", `${T} °C`);
+
+      state.exoError = {
+        T,
+        scenario,
+        sentences: baseSentences,
+        selectedIndex: null,
+        answered: false
+      };
+      saveState();
+      renderExoError();
+    }
+
+    function renderExoError() {
+      const ex = state.exoError;
+      if (!ex) return;
+      document.getElementById("exo-error-statement").innerHTML = `
+        Voici le compte rendu d'un élève (salle à <strong>${ex.T} °C</strong>).<br>
+        Une seule phrase contient une erreur de protocole : clique dessus pour la sélectionner.
+      `;
+
+      const list = document.getElementById("error-sentences-list");
+      list.innerHTML = ex.sentences.map((st, i) => `
+        <div class="error-sentence ${ex.selectedIndex === i ? "selected" : ""}" data-idx="${i}">
+          <strong>${i + 1}.</strong> ${st}
+        </div>
+      `).join("");
+
+      list.querySelectorAll(".error-sentence").forEach(el => {
+        el.onclick = () => {
+          if (ex.answered) return;
+          ex.selectedIndex = parseInt(el.dataset.idx, 10);
+          renderExoError();
+        };
+      });
+
+      document.getElementById("exo-error-feedback").innerHTML = "";
+    }
+
+    document.getElementById("btn-verify-error").onclick = () => {
+      const ex = state.exoError;
+      if (!ex || ex.selectedIndex === null) {
+        alert("Choisis d'abord une phrase en cliquant dessus !");
+        return;
+      }
+      ex.answered = true;
+      const fb = document.getElementById("exo-error-feedback");
+      if (ex.selectedIndex === ex.scenario.replaceIndex) {
+        fb.className = "msg-feedback msg-success";
+        fb.innerHTML = `<strong>🎉 Juste !</strong><br>${ex.scenario.explanation}`;
+      } else {
+        fb.className = "msg-feedback msg-error";
+        fb.innerHTML = `<strong>Non.</strong> L'erreur se trouve à la phrase ${ex.scenario.replaceIndex + 1} :<br>${ex.scenario.explanation}`;
+      }
+    };
+
+    // --- Exercice 3 : Remettre en ordre ---
+    const CORRECT_ORDER = [
+      "Nettoyer puis sécher le pycnomètre.",
+      "Le peser à 1 mg près : m₀.",
+      "Le remplir d'eau distillée à température ambiante et peser : m₁.",
+      "En déduire, à l'aide du tableau, le volume exact du pycnomètre.",
+      "Sécher le pycnomètre, le remplir avec l'adhésif liquide (à température ambiante) et peser : m₂.",
+      "Faire la moyenne de deux mesures et rendre le résultat avec un écart type."
+    ];
+
+    function generateExoReorder() {
+      // Mélange aléatoire (jamais déjà dans le bon ordre)
+      let shuffled = [...CORRECT_ORDER];
+      let isSame = true;
+      while (isSame) {
+        shuffled.sort(() => Math.random() - 0.5);
+        isSame = shuffled.every((v, i) => v === CORRECT_ORDER[i]);
+      }
+      state.exoReorder = {
+        items: shuffled
+      };
+      saveState();
+      renderExoReorder();
+    }
+
+    function renderExoReorder() {
+      const ex = state.exoReorder;
+      if (!ex) return;
+      const list = document.getElementById("reorder-container");
+      list.innerHTML = ex.items.map((it, idx) => `
+        <div class="reorder-item" draggable="true" data-index="${idx}">
+          <span class="reorder-handle">⠿</span>
+          <span class="reorder-text">${it}</span>
+          <div class="reorder-arrows">
+            <button class="btn-arrow-up" data-index="${idx}" ${idx === 0 ? "disabled" : ""}>▲</button>
+            <button class="btn-arrow-down" data-index="${idx}" ${idx === ex.items.length - 1 ? "disabled" : ""}>▼</button>
+          </div>
+        </div>
+      `).join("");
+
+      // Flèches
+      list.querySelectorAll(".btn-arrow-up").forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const i = parseInt(btn.dataset.index, 10);
+          if (i > 0) {
+            const temp = ex.items[i];
+            ex.items[i] = ex.items[i - 1];
+            ex.items[i - 1] = temp;
+            renderExoReorder();
+          }
+        };
+      });
+      list.querySelectorAll(".btn-arrow-down").forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const i = parseInt(btn.dataset.index, 10);
+          if (i < ex.items.length - 1) {
+            const temp = ex.items[i];
+            ex.items[i] = ex.items[i + 1];
+            ex.items[i + 1] = temp;
+            renderExoReorder();
+          }
+        };
+      });
+
+      // Drag and drop HTML5 & mobile touch
+      let dragSrcIndex = null;
+      list.querySelectorAll(".reorder-item").forEach(item => {
+        item.addEventListener("dragstart", (e) => {
+          dragSrcIndex = parseInt(item.dataset.index, 10);
+          item.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "move";
+        });
+        item.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+        });
+        item.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const dropIndex = parseInt(item.dataset.index, 10);
+          if (dragSrcIndex !== null && dragSrcIndex !== dropIndex) {
+            const moved = ex.items.splice(dragSrcIndex, 1)[0];
+            ex.items.splice(dropIndex, 0, moved);
+            renderExoReorder();
+          }
+        });
+        item.addEventListener("dragend", () => {
+          item.classList.remove("dragging");
+        });
+      });
+
+      document.getElementById("exo-reorder-feedback").innerHTML = "";
+    }
+
+    document.getElementById("btn-verify-reorder").onclick = () => {
+      const ex = state.exoReorder;
+      if (!ex) return;
+      const list = document.getElementById("reorder-container");
+      let allGood = true;
+
+      list.querySelectorAll(".reorder-item").forEach((it, idx) => {
+        const text = ex.items[idx];
+        if (text === CORRECT_ORDER[idx]) {
+          it.style.borderColor = "var(--vert)";
+          it.style.background = "var(--vert-fond)";
+        } else {
+          it.style.borderColor = "var(--rouge)";
+          it.style.background = "var(--rouge-fond)";
+          allGood = false;
+        }
+      });
+
+      const fb = document.getElementById("exo-reorder-feedback");
+      if (allGood) {
+        fb.className = "msg-feedback msg-success";
+        fb.textContent = "🎉 Bravo ! Le protocole est parfaitement ordonné.";
+      } else {
+        fb.className = "msg-feedback msg-error";
+        fb.textContent = "Certaines étapes ne sont pas à la bonne place (en rouge). Réessaie ou clique sur Correction.";
+      }
+    };
+
+    document.getElementById("btn-corr-reorder").onclick = () => {
+      if (!state.exoReorder) return;
+      state.exoReorder.items = [...CORRECT_ORDER];
+      renderExoReorder();
+      const fb = document.getElementById("exo-reorder-feedback");
+      fb.className = "msg-feedback msg-success";
+      fb.textContent = "Voici l'ordre exact selon la fiche Cf13.";
+    };
+
+    // Bascule entre sous-types d'exercices
+    document.querySelectorAll(".exo-type-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".exo-type-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".exo-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        state.activeExo = btn.dataset.exo;
+        document.getElementById("exo-panel-" + state.activeExo).classList.add("active");
+        saveState();
+      };
+    });
+
+    document.getElementById("btn-new-exo").onclick = () => {
+      if (state.activeExo === "calc") generateExoCalc();
+      else if (state.activeExo === "error") generateExoError();
+      else if (state.activeExo === "reorder") generateExoReorder();
+    };
+
+    // ==============================================================
+    // GESTION DES ONGLETS PRINCIPAUX
+    // ==============================================================
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.onclick = () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + target).classList.add("active");
+        state.activeTab = target;
+        saveState();
+
+        // Aviser le parent de la nouvelle hauteur si dans un iframe
+        notifyResize();
+      };
+    });
+
+    function notifyResize() {
+      if (window.parent && window.frameElement) {
+        try {
+          window.frameElement.style.height = (document.body.scrollHeight + 50) + "px";
+        } catch (e) {}
+      }
+    }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(notifyResize).observe(document.body);
+    }
+
+    // --- Initialisation globale ---
+    const restored = loadState();
+    if (!restored) {
+      initNewSample(false);
+      generateExoCalc();
+      generateExoError();
+      generateExoReorder();
+    } else {
+      if (!state.exoCalc) generateExoCalc();
+      if (!state.exoError) generateExoError();
+      if (!state.exoReorder) generateExoReorder();
+    }
+
+    // Restaurer l'onglet actif
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.tab === state.activeTab);
+    });
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.classList.toggle("active", p.id === "tab-" + state.activeTab);
+    });
+
+    // Restaurer le sous-onglet d'exercice actif
+    if (state.activeExo) {
+      document.querySelectorAll(".exo-type-btn").forEach(b => b.classList.toggle("active", b.dataset.exo === state.activeExo));
+      document.querySelectorAll(".exo-panel").forEach(p => p.classList.toggle("active", p.id === "exo-panel-" + state.activeExo));
+    }
+
+    renderSteps();
+    updateNotebook();
+    updateBenchVisuals();
+    renderExoCalc();
+    renderExoError();
+    renderExoReorder();
+    renderAllKatex();
+
+  })();
+  </script>
+</body>
+</html>

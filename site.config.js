@@ -29,6 +29,12 @@ window.SITE = {
       ],
     },
     {
+      rubrique: "Simulations",
+      pages: [
+        { id: "masse-volumique", titre: "Masse volumique (Hubbard)", fichier: "pages/masse-volumique.html" },
+      ],
+    },
+    {
       rubrique: "Outils",
       pages: [
         { id: "convertisseur", titre: "Convertisseur d'unités", fichier: "pages/convertisseur.html" },
