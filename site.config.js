@@ -14,30 +14,19 @@ window.SITE = {
   auteur: "Marco Reula",
 
   // Couleur principale (boutons, liens, menu actif). Code couleur au format #RRGGBB.
-  couleur: "#16a34a",
+  couleur: "#b45309",
 
   // Page affichée à l'ouverture du site.
   accueil: "accueil",
 
-  // Le menu : une liste de rubriques, chacune avec ses pages.
+  // Le menu : seulement la rubrique Simulations
   menu: [
-    {
-      rubrique: "Cours",
-      pages: [
-        { id: "accueil", titre: "Accueil", fichier: "pages/accueil.md" },
-        { id: "exemple-cours", titre: "Exemple de cours", fichier: "pages/exemple-cours.md" },
-      ],
-    },
     {
       rubrique: "Simulations",
       pages: [
+        { id: "accueil", titre: "Catalogue des simulations", fichier: "pages/accueil.html" },
         { id: "masse-volumique", titre: "Masse volumique (Hubbard)", fichier: "pages/masse-volumique.html" },
-      ],
-    },
-    {
-      rubrique: "Outils",
-      pages: [
-        { id: "convertisseur", titre: "Convertisseur d'unités", fichier: "pages/convertisseur.html" },
+        { id: "extrait-sec", titre: "Extrait sec (étuve)", fichier: "pages/extrait-sec.html" },
       ],
     },
   ],

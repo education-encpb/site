@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulations — Adhésifs</title>
+  <style>
+    :root {
+      --accent: #b45309;
+      --accent-light: #fef3c7;
+      --accent-hover: #92400e;
+      --texte: #1f2937;
+      --titre: #111827;
+      --fond: #ffffff;
+      --carte: #f9fafb;
+      --carte-bord: #e5e7eb;
+      --discret: #6b7280;
+      --badge-bg: #e0f2fe;
+      --badge-txt: #0369a1;
+      --radius: 10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #d97706;
+        --accent-light: #78350f33;
+        --accent-hover: #f59e0b;
+        --texte: #e5e7eb;
+        --titre: #f9fafb;
+        --fond: #111827;
+        --carte: #1f2937;
+        --carte-bord: #374151;
+        --discret: #9ca3af;
+        --badge-bg: #07598533;
+        --badge-txt: #38bdf8;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 12px 16px 40px;
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+    }
+    .hero {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, var(--carte) 0%, var(--accent-light) 100%);
+      border: 1px solid var(--carte-bord);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      color: var(--titre);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--discret);
+      max-width: 820px;
+    }
+    .category-section {
+      margin-bottom: 28px;
+    }
+    .category-title {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--carte-bord);
+      padding-bottom: 6px;
+    }
+    .grid-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 16px;
+    }
+    .tile-card {
+      background: var(--carte);
+      border: 1px solid var(--carte-bord);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+    }
+    .tile-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    .tile-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .tile-icon {
+      font-size: 32px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .tile-info h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--titre);
+    }
+    .tile-desc {
+      font-size: 13.5px;
+      color: var(--discret);
+      line-height: 1.45;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+    .tile-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--carte-bord);
+      font-size: 13px;
+    }
+    .tile-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--badge-bg);
+      color: var(--badge-txt);
+    }
+    .tile-cta {
+      color: var(--accent);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tile-card:hover .tile-cta {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+    .tile-card.dispo {
+      border-left: 3px solid var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1><span>🩹</span> Contrôle des adhésifs</h1>
+    <p>Simulateurs interactifs pour le <strong>BTS Métiers de la Chimie</strong> : mesures expérimentales selon les normes AFNOR/ASTM, étalonnages, incertitudes et calculs pas à pas.</p>
+  </div>
+
+  <!-- Sous-tuiles 1 : Propriétés du produit -->
+  <div class="category-section">
+    <div class="category-title">
+      <span>🧪</span> Propriétés du produit liquide & brut
+    </div>
+    <div class="grid-tiles">
+
+      <!-- Tuile 1 : Masse volumique -->
+      <a href="#/masse-volumique" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">⚖️</div>
+          <div class="tile-info">
+            <h2>Masse volumique</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Pycnomètre de Hubbard, étalonnage avec la table de l'eau distillée (fiche Cf13), double pesée, moyenne et écart type conventionnel (n − 1).
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">Fiche Cf13</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+      <!-- Tuile 2 : Extrait sec -->
+      <a href="#/extrait-sec" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">🔥</div>
+          <div class="tile-info">
+            <h2>Extrait sec</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Étuve de séchage, coupelle et tare, méthode conventionnelle normalisée (NF EN 827) ou à masse constante, courbe de perte de masse.
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">NF EN 827</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+      <!-- Tuile 3 : Bille-anneau -->
+      <a href="#/bille-anneau" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">🟠</div>
+          <div class="tile-info">
+            <h2>Point bille-anneau</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Point de ramollissement conventionnel des colles thermofusibles (hot melt) : bain thermorégulé à 5 °C/min, anneaux laiton et billes en acier.
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">NF EN 1238</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Sous-tuiles 2 : Durcissement et cinétique -->
+  <div class="category-section">
+    <div class="category-title">
+      <span>⏳</span> Durcissement & Cinétique de prise
+    </div>
+    <div class="grid-tiles">
+
+      <!-- Tuile 4 : DPU -->
+      <a href="#/dpu" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">⏳</div>
+          <div class="tile-info">
+            <h2>Durée pratique d'utilisation (DPU)</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Pot life des adhésifs bicomposants réactifs (époxy, polyuréthanes) : suivi viscosimétrique jusqu'au doublement de la viscosité initiale.
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">NF EN 14022</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+      <!-- Tuile 5 : Temps de prise & ouvert -->
+      <a href="#/temps-prise-ouvert" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">⏱️</div>
+          <div class="tile-info">
+            <h2>Temps de prise & temps ouvert</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Séries d'essais d'assemblage carton/carton et papier/verre : déterminer le délai maximal de collage et la durée de maintien sous pression.
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">Fiche Cf13</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Sous-tuiles 3 : Performances du collage -->
+  <div class="category-section">
+    <div class="category-title">
+      <span>🧲</span> Performances mécaniques du collage
+    </div>
+    <div class="grid-tiles">
+
+      <!-- Tuile 6 : Tack -->
+      <a href="#/tack" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">🖐️</div>
+          <div class="tile-info">
+            <h2>Tack d'un ruban adhésif</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Adhésifs sensibles à la pression (PSA) : mesure de l'adhésion instantanée selon 3 méthodes (bille roulante, boucle Loop Tack, poinçon Probe Tack).
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">AFERA 4015</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+      <!-- Tuile 7 : Pelage et cisaillement -->
+      <a href="#/pelage-cisaillement" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">🧲</div>
+          <div class="tile-info">
+            <h2>Pelage & Cisaillement</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Essais sur banc de traction dynamométrique : résistance au pelage à 180° (adhésion) et au cisaillement à recouvrement simple (cohésion).
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">NF EN 1465</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+      <!-- Tuile 8 : Fluage -->
+      <a href="#/fluage" target="_top" class="tile-card dispo">
+        <div class="tile-top">
+          <div class="tile-icon">🐌</div>
+          <div class="tile-info">
+            <h2>Fluage sous charge</h2>
+            <span class="tile-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="tile-desc">
+          Tenue à long terme d'un joint collé sous contrainte statique constante en fonction du temps et de la température (banc de cisaillement suspendu).
+        </div>
+        <div class="tile-footer">
+          <span style="font-size:12px; color:var(--discret);">NF EN 15336</span>
+          <span class="tile-cta">Ouvrir la simulation →</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    // Communication de la hauteur vers le conteneur parent
+    function notifyResize() {
+      if (window.parent && window.frameElement) {
+        try {
+          window.frameElement.style.height = (document.body.scrollHeight + 50) + "px";
+        } catch (e) {}
+      }
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(notifyResize).observe(document.body);
+    }
+    window.addEventListener("load", notifyResize);
+  </script>
+</body>
+</html>
