@@ -1,0 +1,56 @@
+{
+  // Environnement du Codespace : rien à installer pour le prof.
+  // Image « universal » = image par défaut de Codespaces : aucune construction, démarrage rapide,
+  // et elle ne compte pas dans le stockage gratuit. Pas de « features » : elles forcent une construction.
+  "name": "Atelier RASF — mon site (niveau 1, GitHub Pages)",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mistralai.mistral-vibe-code",
+        "anthropic.claude-code",
+        "openai.chatgpt"
+      ],
+      "settings": {
+        "workbench.startupEditor": "none",
+        "files.autoSave": "afterDelay",
+        // Assistants proposés : Mistral, Claude, ChatGPT (Codex). On coupe le chat Copilot intégré à VS Code.
+        "chat.disableAIFeatures": true,
+        // Ne pas encadrer les lettres accentuées comme des caractères suspects.
+        "editor.unicodeHighlight.nonBasicASCII": false,
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        // Habillage RASF (couleurs du logo : bleu #336fa3, violet #666493).
+        "window.title": "RASF — Atelier ${rootName}",
+        "workbench.colorCustomizations": {
+          "statusBar.background": "#336fa3",
+          "statusBar.foreground": "#ffffff",
+          "statusBarItem.remoteBackground": "#666493",
+          "statusBarItem.remoteForeground": "#ffffff",
+          "activityBarBadge.background": "#336fa3"
+        },
+        // On cache au prof les fichiers techniques ; l'agent, lui, les voit toujours.
+        "files.exclude": {
+          ".devcontainer": true,
+          ".github": true,
+          "assets": true,
+          "index.html": true,
+          "LICENSE": true,
+          "README.md": true
+        }
+      }
+    },
+    "codespaces": {
+      // Page d'accueil du prof, ouverte (mise en forme) à l'arrivée.
+      "openFiles": ["DEMARRER.md"]
+    }
+  },
+  // Remplace le « Welcome to Codespaces » en anglais par le message du RASF.
+  "onCreateCommand": "sudo cp .devcontainer/bienvenue.txt /usr/local/etc/vscode-dev-containers/first-run-notice.txt || true",
+  // Lance l'aperçu du site à chaque ouverture du Codespace, dans un NOUVEL ONGLET du navigateur :
+  // l'aperçu intégré à VS Code (« Navigateur simple ») reste vide dans Chrome (testé le 10/11/2026).
+  "postAttachCommand": "python3 -m http.server 5173",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": { "label": "Aperçu de mon site", "onAutoForward": "openBrowser" }
+  }
+}
